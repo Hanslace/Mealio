@@ -15,9 +15,9 @@ const paymentRoutes = require('./payment.routes');
 const adminRoutes = require('./admin.routes');
 const deliveryPersonnelRoutes = require('./deliveryPersonnel.routes');
 const menuItemLikeRoutes = require('./menuItemLike.routes');
-const notificationRoutes = require('./routes/notification.routes');
+const notificationRoutes = require('./notification.routes');
 
-router.use('/api/notifications', notificationRoutes);
+router.use('/notifications', notificationRoutes);
 router.use('/likes', menuItemLikeRoutes);
 router.use('/delivery-personnel', deliveryPersonnelRoutes);
 router.use('/payments', paymentRoutes);
