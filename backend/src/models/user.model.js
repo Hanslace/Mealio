@@ -39,10 +39,22 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0
       },
+      push_token: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       is_deleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
       },
+      is_online: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+      },
+      last_seen: {
+        type: DataTypes.DATE,
+        allowNull: true
+      },      
       created_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
