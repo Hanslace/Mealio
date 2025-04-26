@@ -3,16 +3,17 @@ const authMiddleware = require('../middlewares/auth.middleware');
 const restaurantController = require('../controllers/restaurant.controller');
 const roleMiddleware = require('../middlewares/role.middleware');
 
+router.use(authMiddleware());
+
 // ✅ Create new restaurant (only owner or admin)
 router.post('/', 
-  authMiddleware(), 
+   
   roleMiddleware(['admin', 'restaurant_owner']), 
   restaurantController.createRestaurant
 );
 
 // ✅ Get my own restaurants
 router.get('/mine', 
-  authMiddleware(), 
   roleMiddleware(['admin', 'restaurant_owner']), 
   restaurantController.getMyRestaurants
 );
@@ -25,7 +26,6 @@ router.get('/',
 
 // ✅ Update restaurant
 router.put('/:id', 
-  authMiddleware(), 
   roleMiddleware(['admin', 'restaurant_owner']), 
   restaurantController.updateRestaurant
 );

@@ -2,9 +2,10 @@ const router = require('express').Router();
 const authMiddleware = require('../middlewares/auth.middleware');
 const orderController = require('../controllers/order.controller');
 
+router.use(authMiddleware(), roleMiddleware(['customer', 'admin']));
 // Create an order
-router.post('/', authMiddleware(), orderController.createOrder);
+router.post('/', orderController.createOrder);
 // Get my orders
-router.get('/', authMiddleware(), orderController.getMyOrders);
+router.get('/',  orderController.getMyOrders);
 
 module.exports = router;
