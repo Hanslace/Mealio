@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const authMiddleware = require('../middlewares/auth.middleware');
 const orderController = require('../controllers/order.controller');
+const roleMiddleware = require('../middlewares/role.middleware');
+
 
 router.use(authMiddleware(), roleMiddleware(['customer', 'admin']));
 // Create an order

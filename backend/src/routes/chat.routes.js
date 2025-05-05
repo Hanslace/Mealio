@@ -12,7 +12,4 @@ router.post('/room', chatController.createOrGetRoom);
 // Fetch all messages for a room
 router.get('/room/:roomId/messages', chatController.getMessages);
 
-// (Optional) API Send message (mostly sockets used now, but kept for backup/manual testing)
-router.post('/room/:roomId/message', chatController.sendMessage);
-
 module.exports = router;

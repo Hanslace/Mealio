@@ -1,34 +1,33 @@
-// src/controllers/delivery.controller.js
 const db = require('../models');
 const DeliveryAssignment = db.DeliveryAssignment;
 const DeliveryLocationLog = db.DeliveryLocationLog;
 const Order = db.Order;
 const DeliveryPersonnel = db.DeliveryPersonnel;
+const Restaurant = db.Restaurant;
+const User = db.User;
+const { Expo } = require('expo-server-sdk');
+const expo = new Expo();
 
-//autmate the assignment
-module.exports.assignDelivery = async (req, res) => {
+// Assign a delivery personnel
+exports.assignDelivery = async (req, res) => {
   try {
     const { order_id, delivery_id } = req.body;
-    // check if the order is valid
+
     const order = await Order.findByPk(order_id);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
-    // check if the delivery person is valid
+
     const deliveryPerson = await DeliveryPersonnel.findByPk(delivery_id);
     if (!deliveryPerson) {
       return res.status(404).json({ error: 'Delivery personnel not found' });
     }
 
-    // create assignment
     const assignment = await DeliveryAssignment.create({
       order_id,
       delivery_id,
       current_status: 'assigned'
     });
-
-    // Optionally, update order status to out_for_delivery or something as needed
-    // ...
 
     return res.status(201).json(assignment);
   } catch (err) {
@@ -37,26 +36,19 @@ module.exports.assignDelivery = async (req, res) => {
   }
 };
 
-/**
- * Delivery person updates assignment status
- * (picked_up, delivering, delivered, etc.)
- */
-module.exports.updateAssignmentStatus = async (req, res) => {
+// Update delivery assignment status (picked_up, delivered, etc.)
+exports.updateAssignmentStatus = async (req, res) => {
   try {
-    // Only the assigned delivery person or admin can update
     const { assignmentId } = req.params;
     const { current_status } = req.body;
+
     const assignment = await DeliveryAssignment.findByPk(assignmentId);
     if (!assignment) {
       return res.status(404).json({ error: 'Assignment not found' });
     }
 
-    // check if current user is the assigned delivery personnel or admin
-    const deliveryPerson = await DeliveryPersonnel.findOne({ 
-      where: { user_id: req.user.user_id } 
-    });
+    const deliveryPerson = await DeliveryPersonnel.findOne({ where: { user_id: req.user.user_id } });
     if (req.user.role !== 'admin') {
-      // user must be the assigned delivery person
       if (!deliveryPerson || deliveryPerson.delivery_id !== assignment.delivery_id) {
         return res.status(403).json({ error: 'You are not assigned to this order' });
       }
@@ -64,6 +56,31 @@ module.exports.updateAssignmentStatus = async (req, res) => {
 
     assignment.current_status = current_status;
     await assignment.save();
+
+    // Emit real-time status update
+    const io = req.app.get('io');
+    io.to(`assignment_${assignmentId}`).emit('status_update', { assignment_id: assignmentId, current_status });
+
+    // Push Notification to Customer + Restaurant Owner
+    const order = await Order.findByPk(assignment.order_id);
+    const customer = await User.findByPk(order.user_id);
+    const restaurant = await Restaurant.findByPk(order.restaurant_id);
+    const owner = await User.findByPk(restaurant.user_id);
+
+    const pushTokens = [];
+    if (customer?.push_token) pushTokens.push(customer.push_token);
+    if (owner?.push_token) pushTokens.push(owner.push_token);
+
+    if (pushTokens.length > 0) {
+      await expo.sendPushNotificationsAsync(pushTokens.map(token => ({
+        to: token,
+        sound: 'default',
+        title: 'Order Update',
+        body: `Order status changed to ${current_status}`,
+        data: { assignment_id: assignment.assignment_id },
+      })));
+    }
+
     return res.json({ message: 'Delivery status updated', assignment });
   } catch (err) {
     console.error(err);
@@ -71,24 +88,19 @@ module.exports.updateAssignmentStatus = async (req, res) => {
   }
 };
 
-/**
- * Delivery person logs current location
- */
-module.exports.logLocation = async (req, res) => {
+// Quietly log location in DB (optional backup)
+exports.logLocation = async (req, res) => {
   try {
     const { assignmentId } = req.params;
     const { latitude, longitude } = req.body;
 
-    // check if the assignment is valid and belongs to the current user if not admin
     const assignment = await DeliveryAssignment.findByPk(assignmentId);
     if (!assignment) {
       return res.status(404).json({ error: 'Assignment not found' });
     }
 
     if (req.user.role !== 'admin') {
-      const deliveryPerson = await DeliveryPersonnel.findOne({ 
-        where: { user_id: req.user.user_id } 
-      });
+      const deliveryPerson = await DeliveryPersonnel.findOne({ where: { user_id: req.user.user_id } });
       if (!deliveryPerson || deliveryPerson.delivery_id !== assignment.delivery_id) {
         return res.status(403).json({ error: 'You are not assigned to this order' });
       }
@@ -99,6 +111,7 @@ module.exports.logLocation = async (req, res) => {
       latitude,
       longitude
     });
+
     return res.status(201).json(logEntry);
   } catch (err) {
     console.error(err);
@@ -106,23 +119,18 @@ module.exports.logLocation = async (req, res) => {
   }
 };
 
-/**
- * (Optional) Get location logs for an assignment
- * Admin or the assigned delivery person might want to see it.
- */
-module.exports.getLocationLogs = async (req, res) => {
+// Fetch location logs (for admin, optional)
+exports.getLocationLogs = async (req, res) => {
   try {
     const { assignmentId } = req.params;
+
     const assignment = await DeliveryAssignment.findByPk(assignmentId);
     if (!assignment) {
       return res.status(404).json({ error: 'Assignment not found' });
     }
 
-    // only admin or assigned delivery person
     if (req.user.role !== 'admin') {
-      const deliveryPerson = await DeliveryPersonnel.findOne({ 
-        where: { user_id: req.user.user_id } 
-      });
+      const deliveryPerson = await DeliveryPersonnel.findOne({ where: { user_id: req.user.user_id } });
       if (!deliveryPerson || deliveryPerson.delivery_id !== assignment.delivery_id) {
         return res.status(403).json({ error: 'You are not assigned to this order' });
       }
@@ -132,6 +140,7 @@ module.exports.getLocationLogs = async (req, res) => {
       where: { assignment_id: assignmentId },
       order: [['captured_at', 'ASC']]
     });
+
     return res.json(logs);
   } catch (err) {
     console.error(err);

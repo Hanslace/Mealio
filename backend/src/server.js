@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const db = require('./models');
 const routes = require('./routes');
 const http = require('http');
-const setupSocket = require('./src/socket'); // 👈 New import
+const setupSocket = require('./socket'); // 👈 New import
 
 const app = express();
 const server = http.createServer(app);
