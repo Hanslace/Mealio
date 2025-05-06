@@ -5,7 +5,7 @@ import { View, Text, StyleSheet } from 'react-native';
 export default function ScreenName() {
   return (
     <View style={styles.container}>
-      <Text>ScreenName</Text>
+      <Text>ForgotPassword</Text>
     </View>
   );
 }

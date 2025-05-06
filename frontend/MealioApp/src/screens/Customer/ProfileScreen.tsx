@@ -1,22 +1,19 @@
+// src/screens/.../ScreenName.tsx
 import React from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
-import { useAuth } from '../../context/AuthContext';
+import { View, Text, StyleSheet } from 'react-native';
 
-const ProfileScreen: React.FC = () => {
-  const { logout, userRole } = useAuth();
-
+export default function ScreenName() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Customer Profile</Text>
-      <Text>Role: {userRole}</Text>
-      <Button title="Logout" onPress={logout} />
+      <Text>ScreenName</Text>
     </View>
   );
-};
-
-export default ProfileScreen;
+}
 
 const styles = StyleSheet.create({
-  container: { flex:1, justifyContent:'center', alignItems:'center' },
-  title: { fontSize:20, fontWeight:'bold', marginBottom:20 }
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });

@@ -1,10 +1,23 @@
-// src/api/axiosInstance.ts
+// File: src/api/axiosInstance.ts
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const API_URL = 'https://mealio-production.up.railway.app/api';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://YOUR_IP:PORT/api',   // Base URL of backend
-  timeout: 10000,                      // 10-second request timeout
-  headers: { 'Content-Type': 'application/json' }
+  baseURL: API_URL,
 });
+
+// Attach token automatically if exists
+axiosInstance.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default axiosInstance;
