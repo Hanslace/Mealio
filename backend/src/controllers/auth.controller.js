@@ -13,12 +13,11 @@ module.exports.register = async (req, res) => {
       full_name,
       email,
       password_hash: hashedPassword,
-      role: role || 'customer',
+      role: role ,
     });
 
     return res.status(201).json({
-      message: 'User registered',
-      user_id: newUser.user_id
+      message: 'User registered'
     });
   } catch (err) {
     console.error(err);

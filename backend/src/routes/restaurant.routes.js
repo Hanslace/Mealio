@@ -31,7 +31,7 @@ router.put('/:id',
 );
 
 // ✅ Search restaurants by name (public)
-router.get('/search/name', 
+router.get('/search', 
   restaurantController.searchRestaurantsByName
 );
 

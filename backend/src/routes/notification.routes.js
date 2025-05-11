@@ -11,10 +11,10 @@ router.use(authMiddleware());
 router.post('/', notificationController.createNotification);
 
 // 2️⃣ Fetch all previous notifications for a user
-router.get('/user/:userId', notificationController.getNotifications);
+router.get('/:userId', notificationController.getNotifications);
 
 // 3️⃣ Mark a notification as read (to update unread count)
-router.put('/:notificationId/mark-read', notificationController.markAsRead);
+router.put('/:notificationId/read', notificationController.markAsRead);
 
 // 🚀 Real-time: New notifications and unread count updates handled via Socket.IO (no HTTP polling)
 
