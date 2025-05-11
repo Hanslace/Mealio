@@ -2,7 +2,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'https://mealio-production.up.railway.app/api';
+const API_URL = 'https://mealio--api.up.railway.app/api';
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
