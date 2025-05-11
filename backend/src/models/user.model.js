@@ -39,10 +39,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0
       },
-      push_token: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
       is_deleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
@@ -105,6 +101,7 @@ module.exports = (sequelize, DataTypes) => {
         as: 'likedItems'
       });
       User.hasMany(models.MenuItemLike, { foreignKey: 'user_id' });
+      User.hasMany(models.PushToken, { foreignKey: 'user_id', as: 'pushTokens' });
       
     };
   

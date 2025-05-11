@@ -5,7 +5,7 @@ const User = db.User;
 
 module.exports.register = async (req, res) => {
   try {
-    const { full_name, email, password, role, push_token } = req.body; // Accept push_token too
+    const { full_name, email, password, role } = req.body; // Accept push_token too
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -14,7 +14,6 @@ module.exports.register = async (req, res) => {
       email,
       password_hash: hashedPassword,
       role: role || 'customer',
-      push_token: push_token || null,  // Save the push token
     });
 
     return res.status(201).json({
