@@ -21,10 +21,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: true
       },
-      is_deleted: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-      },
       image_url: DataTypes.TEXT,
       created_at: {
         type: DataTypes.DATE,
