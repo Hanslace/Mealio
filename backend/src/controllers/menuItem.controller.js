@@ -130,6 +130,7 @@ module.exports.getMostLikedItems = async (req, res) => {
   try {
     const results = await db.MenuItem.findAll({
       attributes: {
+        subQuery: false,
         include: [
           [sequelize.fn('COUNT', sequelize.col('MenuItemLikes.like_id')), 'like_count']
         ]
@@ -138,6 +139,7 @@ module.exports.getMostLikedItems = async (req, res) => {
         {
           model: db.MenuItemLike,
           attributes: [],
+          required:   false  
         }
       ],
       group: ['MenuItem.item_id'],
@@ -158,6 +160,7 @@ module.exports.getTrendingItems = async (req, res) => {
 
     const trending = await db.MenuItem.findAll({
       attributes: {
+        
         include: [
           [sequelize.fn('COUNT', sequelize.col('MenuItemLikes.like_id')), 'like_count']
         ]

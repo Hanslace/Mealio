@@ -9,12 +9,12 @@ export const createOrder = async (orderData: {
   payment_method: 'cod' | 'online';
   transaction_id?: string;
 }) => {
-  const res = await axiosInstance.post('/order', orderData);
+  const res = await axiosInstance.post('/orders', orderData);
   return res.data; // { order, payment }
 };
 
 // ✅ Get my orders (user, restaurant owner, or admin)
 export const getMyOrders = async () => {
-  const res = await axiosInstance.get('/order');
+  const res = await axiosInstance.get('/orders');
   return res.data; // Array of order objects
 };

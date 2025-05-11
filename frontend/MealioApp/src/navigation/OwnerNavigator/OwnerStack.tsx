@@ -43,7 +43,7 @@ export function DashboardStack() {
       <Stack.Screen
         name="DashboardMain"
         component={DashboardScreen}
-        options={{ title: 'Dashboard' }}
+        options={{ title: 'Dashboard'  }}
       />
       <Stack.Screen
         name="AnalyticsDashboard"

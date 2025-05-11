@@ -2,7 +2,7 @@ import axiosInstance from './axiosInstance';
 
 // ✅ Get logged-in user's profile
 export const getMyProfile = async () => {
-  const res = await axiosInstance.get('/user/profile');
+  const res = await axiosInstance.get('/users/profile');
   return res.data; // returns { user info + addresses }
 };
 
@@ -12,7 +12,7 @@ export const updateMyProfile = async (payload: {
   phone?: string;
   is_verified?: boolean;
 }) => {
-  const res = await axiosInstance.put('/user/profile', payload);
+  const res = await axiosInstance.put('/users/profile', payload);
   return res.data; // returns success message
 };
 
