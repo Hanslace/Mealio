@@ -50,7 +50,16 @@ module.exports = (sequelize, DataTypes) => {
       last_seen: {
         type: DataTypes.DATE,
         allowNull: true
-      },      
+      },
+      password_reset_token:  { 
+        type: DataTypes.STRING, allowNull: true 
+      },
+      password_reset_expires:{ 
+        type: DataTypes.DATE,   allowNull: true 
+      },
+      password_reset_sent_at:{ 
+        type: DataTypes.DATE,   allowNull: true 
+      },     
       created_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
