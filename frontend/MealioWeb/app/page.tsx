@@ -1,22 +1,45 @@
 // app/page.tsx
-import React from 'react';
+import Image from 'next/image';
+import Link  from 'next/link';
 
 export default function HomePage() {
   return (
-    <div style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto' }}>
-      <h2>Welcome to Mealio</h2>
-      <p>Delicious meals delivered to your door.</p>
-      <div style={{ marginTop: 24 }}>
-        <a
-          href="https://apps.apple.com/…"
-          style={{ marginRight: 16 }}
-        >
-          <img src="/appstore-badge.svg" alt="Download on the App Store" width={150} />
+    <main style={{ padding: '2rem', textAlign: 'center' }}>
+      {/* Hero section */}
+      <section style={{ marginBottom: '2rem' }}>
+        <Image
+          src="/hero.png"
+          alt="Delicious meals delivered"
+          width={1200}   // replace with your image’s actual intrinsic width
+          height={600}   // replace with your image’s actual intrinsic height
+          priority       // preload for LCP
+        />
+      </section>
+
+      {/* Features section */}
+      <section style={{ marginBottom: '2rem' }}>
+        <Image
+          src="/features.png"
+          alt="App features overview"
+          width={800}
+          height={400}
+        />
+      </section>
+
+      {/* Example call-to-action */}
+      <Link href="/download">
+        <a style={{
+          display: 'inline-block',
+          padding: '1rem 2rem',
+          backgroundColor: '#FFA500',
+          color: '#fff',
+          borderRadius: '4px',
+          textDecoration: 'none',
+          fontWeight: 'bold'
+        }}>
+          Download the App
         </a>
-        <a href="https://play.google.com/…">
-          <img src="/googleplay-badge.png" alt="Get it on Google Play" width={150} />
-        </a>
-      </div>
-    </div>
+      </Link>
+    </main>
   );
 }
