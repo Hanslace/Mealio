@@ -42,4 +42,9 @@ router.post(
   authController.resetPassword
 );
 
+router.get(
+  '/verify-reset-token/:token',
+  authController.verifyResetToken
+);
+
 module.exports = router;

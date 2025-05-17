@@ -149,3 +149,30 @@ module.exports.resetPassword = async (req, res) => {
     return res.status(500).json({ error: 'Could not reset password' });
   }
 };
+
+
+module.exports.verifyResetToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+    if (!token) {
+      return res.status(400).json({ message: 'Reset token is required.' });
+    }
+
+    const user = await User.findOne({
+      where: {
+        password_reset_token: token,
+        password_reset_expires: { [Op.gt]: new Date() }
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Reset token is invalid or has expired.' });
+    }
+
+    // Token is valid
+    return res.json({ message: 'Token is valid.' });
+  } catch (err) {
+    console.error('verifyResetToken error:', err);
+    return res.status(500).json({ error: 'Could not verify reset token.' });
+  }
+};
