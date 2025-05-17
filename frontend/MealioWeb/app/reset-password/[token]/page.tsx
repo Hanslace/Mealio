@@ -1,30 +1,32 @@
+// app/reset-password/[token]/page.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
-interface Props {
-  params: { token: string };
-}
+export default function ResetPasswordPage() {
+  const { token } = useParams() as { token?: string };
+  const router = useRouter();
 
-export default function ResetPasswordPage({ params }: Props) {
-  const { token } = params;
-  const router     = useRouter();
-
-  const [status, setStatus] = useState<'loading' | 'form'>('loading');
-  const [newPassword, setNewPassword]       = useState('');
+  const [status, setStatus]           = useState<'loading' | 'form'>('loading');
+  const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [submitting, setSubmitting]         = useState(false);
-  const [error, setError]                   = useState('');
+  const [submitting, setSubmitting]   = useState(false);
+  const [error, setError]             = useState('');
 
-  // 1) Validate token on mount, then either redirect to “invalid” or show form
+  // 1) Verify token on mount
   useEffect(() => {
+    if (!token) {
+      // no token in URL → treat as invalid
+      router.replace('/reset-password/invalid');
+      return;
+    }
     (async () => {
       try {
         const res = await fetch(
           `${process.env.MEALIO_API_URL}/auth/verify-reset-token/${token}`
         );
-        if (!res.ok) throw new Error('Link invalid or expired');
+        if (!res.ok) throw new Error();
         setStatus('form');
       } catch {
         router.replace('/reset-password/invalid');
@@ -32,9 +34,10 @@ export default function ResetPasswordPage({ params }: Props) {
     })();
   }, [token, router]);
 
-  // 2) On success, redirect to success page
+  // 2) Handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match.');
       return;
@@ -51,7 +54,6 @@ export default function ResetPasswordPage({ params }: Props) {
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Reset failed');
-      // redirect directly to success page
       router.replace('/reset-password/success');
     } catch (err: any) {
       setError(err.message);
@@ -59,11 +61,11 @@ export default function ResetPasswordPage({ params }: Props) {
     }
   };
 
+  // 3) Render loading state or the form
   if (status === 'loading') {
     return <div style={{ color: '#333' }}>Verifying link…</div>;
   }
 
-  // form
   return (
     <form
       onSubmit={handleSubmit}
