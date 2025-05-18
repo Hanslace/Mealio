@@ -2,7 +2,7 @@ const router = require('express').Router();
 const authMiddleware  = require('../middlewares/auth.middleware');
 const roleMiddleware  = require('../middlewares/role.middleware');
 const adminController = require('../controllers/admin.controller');
-
+console.log(adminController);
 // All admin routes require user to be admin
 router.use(authMiddleware(), roleMiddleware(['admin']));
 
@@ -22,10 +22,13 @@ router.put('/restaurants/:restaurantId/suspend',  adminController.suspendRestaur
 router.put('/restaurants/:restaurantId/unsuspend',adminController.unsuspendRestaurant);
 
 // Delivery Personnel
-router.get('/delivery-personnel', adminController.listDeliveryPersonnel);
-router.put('/delivery-personnel/:id/verify', adminController.verifyProfile);
-router.put('/delivery-personnel/:id/suspend', adminController.suspendDelivery);
-router.put('/delivery-personnel/:id/unsuspend', adminController.unsuspendDelivery);
+// Delivery Personnel
+router.get('/delivery-personnel',                 adminController.listDeliveryPersonnel);
+router.put('/delivery-personnel/:id/verify',      adminController.verifyProfile);
+router.put('/delivery-personnel/:id/reject',      adminController.rejectProfile);
+router.put('/delivery-personnel/:id/suspend',     adminController.suspendDelivery);
+router.put('/delivery-personnel/:id/unsuspend',   adminController.unsuspendDelivery);
+
 
 // Broadcast notifications
 router.post('/notify/all-users',               adminController.notifyAllUsers);

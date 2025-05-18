@@ -188,12 +188,46 @@ module.exports.listDeliveryPersonnel = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+
+
 async function notifyDeliveryPerson(dp, subject, message) {
   const user = await User.findByPk(dp.user_id);
   if (user?.email) {
     await sendEmail(user.email, subject, `<p>${message}</p>`);
   }
 }
+
+// ─── Delivery Verification ──────────────────────────────────────────
+module.exports.verifyProfile = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const dp = await DeliveryPersonnel.findByPk(id);
+    if (!dp) return res.status(404).json({ error: 'Not found' });
+    dp.verification_status = 'approved';
+    await dp.save();
+    const msg = 'Your delivery profile has been verified.';
+    await notifyDeliveryPerson(dp, 'Delivery Profile Verified', msg);
+    res.json({ message: msg, profile: dp });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.rejectProfile = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const dp = await DeliveryPersonnel.findByPk(id);
+    if (!dp) return res.status(404).json({ error: 'Not found' });
+    dp.verification_status = 'rejected';
+    await dp.save();
+    const msg = 'Your delivery profile verification has been rejected.';
+    await notifyDeliveryPerson(dp, 'Delivery Profile Rejected', msg);
+    res.json({ message: msg, profile: dp });
+  } catch (err) {
+    next(err);
+  }
+};
+
 
 module.exports.suspendDelivery = async (req, res, next) => {
   try {
