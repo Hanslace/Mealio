@@ -14,7 +14,7 @@ router.post('/',  roleMiddleware(['admin','customer']), reviewController.createR
 router.get('/restaurant/:restaurantId', reviewController.getReviewsForRestaurant);
 
 // Update/Delete own review
-router.put('/:reviewId', roleMiddleware(['admin','customer']), reviewController.updateReview);
-router.delete('/:reviewId', roleMiddleware(['admin','customer']), reviewController.deleteReview);
+router.put('/:reviewId', roleMiddleware(['customer']), reviewController.updateReview);
+router.delete('/:reviewId', roleMiddleware(['customer']), reviewController.deleteReview);
 
 module.exports = router;

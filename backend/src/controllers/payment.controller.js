@@ -3,36 +3,6 @@ const Payment = db.Payment;
 const Order = db.Order;
 
 
-/**
- * Confirm payment via webhook or manual gateway verification
- */
-module.exports.confirmPayment = async (req, res, next) => {
-  try {
-    const { paymentId } = req.params;
-    const { payment_status } = req.body; // 'completed' | 'failed'
-
-    const payment = await Payment.findByPk(paymentId);
-    if (!payment) return res.status(404).json({ error: 'Payment not found' });
-
-    payment.payment_status = payment_status;
-    await payment.save();
-
-    const order = await Order.findByPk(payment.order_id);
-    if (!order) return res.status(404).json({ error: 'Order not found' });
-
-    if (payment_status === 'completed') {
-      order.order_status = 'preparing';
-    } else if (payment_status === 'failed') {
-      order.order_status = 'canceled';
-    }
-
-    await order.save();
-
-    return res.json({ message: 'Payment status updated', payment, order });
-  } catch (err) {
-    next(err);
-  }
-};
 
 /**
  * Webhook (no auth) — for gateway callback

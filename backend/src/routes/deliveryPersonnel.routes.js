@@ -15,16 +15,6 @@ router.get(
   controller.getMyProfile
 );
 
-router.get(
-  '/',
-  roleMiddleware(['admin']),
-  controller.listAll
-);
 
-router.put(
-  '/:delivery_id/verify',
-  roleMiddleware(['admin']),
-  controller.verifyProfile
-);
 
 module.exports = router;

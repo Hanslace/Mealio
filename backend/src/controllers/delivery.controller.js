@@ -119,31 +119,4 @@ exports.logLocation = async (req, res) => {
   }
 };
 
-// Fetch location logs (for admin, optional)
-exports.getLocationLogs = async (req, res) => {
-  try {
-    const { assignmentId } = req.params;
 
-    const assignment = await DeliveryAssignment.findByPk(assignmentId);
-    if (!assignment) {
-      return res.status(404).json({ error: 'Assignment not found' });
-    }
-
-    if (req.user.role !== 'admin') {
-      const deliveryPerson = await DeliveryPersonnel.findOne({ where: { user_id: req.user.user_id } });
-      if (!deliveryPerson || deliveryPerson.delivery_id !== assignment.delivery_id) {
-        return res.status(403).json({ error: 'You are not assigned to this order' });
-      }
-    }
-
-    const logs = await DeliveryLocationLog.findAll({
-      where: { assignment_id: assignmentId },
-      order: [['captured_at', 'ASC']]
-    });
-
-    return res.json(logs);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Error fetching location logs' });
-  }
-};

@@ -1,39 +1,39 @@
-// app/admin/layout.tsx
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-export const metadata = {
-  title: 'Mealio Admin',
-};
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const path = usePathname() || '';
+
+  // If we're on /admin/login or any sub‐path, skip the admin sidebar
+  if (path.startsWith('/admin/login')) {
+    return <>{children}</>;
+  }
   return (
-    <html lang="en">
-      <head />
-      <body style={{ display: 'flex', minHeight: '100vh', margin: 0 }}>
-        <aside
-          style={{
-            width: 240,
-            background: '#222',
-            color: '#fff',
-            padding: 16,
-          }}
-        >
-          <h2>Admin</h2>
-          <nav>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              <li><Link href="/admin"><a style={{ color: '#fff' }}>Dashboard</a></Link></li>
-              <li><Link href="/admin/users"><a style={{ color: '#fff' }}>Users</a></Link></li>
-              <li><Link href="/admin/settings"><a style={{ color: '#fff' }}>Settings</a></Link></li>
-            </ul>
-          </nav>
-        </aside>
-        <main style={{ flex: 1, padding: 24 }}>{children}</main>
-      </body>
-    </html>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <nav style={{
+        backgroundColor: '#333',
+        padding: '1rem',
+        color: '#fff',
+        display: 'flex',
+        gap: '1rem'
+      }}>
+        <Link href="/admin" style={{ color: '#fff' }}>Dashboard</Link>
+        <Link href="/admin/users" style={{ color: '#fff' }}>Users</Link>
+        <Link href="/admin/restaurants" style={{ color: '#fff' }}>Restaurants</Link>
+        <Link href="/admin/delivery-personnel" style={{ color: '#fff' }}>Delivery Personnel</Link>
+      </nav>
+      <main style={{ flex: 1, padding: '1rem' }}>{children}</main>
+      <footer style={{
+        textAlign: 'center',
+        padding: '1rem',
+        backgroundColor: '#f5f5f5'
+      }}>
+        &copy; {new Date().getFullYear()} Mealio Admin Panel
+      </footer>
+    </div>
   );
 }

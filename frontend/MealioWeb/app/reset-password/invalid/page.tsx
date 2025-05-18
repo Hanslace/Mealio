@@ -24,18 +24,7 @@ export default function ExpiredPage() {
         <p style={{ marginBottom: '24px' }}>
           That reset link is invalid or has expired. Please request a new one.
         </p>
-        <Link href="/reset-password">
-          <a style={{
-            display: 'inline-block',
-            padding: '10px 20px',
-            backgroundColor: '#FFA500',
-            color: '#fff',
-            borderRadius: '4px',
-            textDecoration: 'none'
-          }}>
-            Request New Link
-          </a>
-        </Link>
+    
       </div>
     </div>
   );

@@ -1,45 +1,31 @@
-// app/page.tsx
-import Image from 'next/image';
-import Link  from 'next/link';
+'use client';
+import React from 'react';
+import NavBar from '../components/NavBar';
+import HeroSection from '../components/HeroSection';
+import FeaturesSection from '../components/FeaturesSection';
+import ScreenshotsSection from '../components/ScreenshotsSection';
+import HowItWorksSection from '../components/HowItWorksSection';
+import DownloadSection from '../components/DownloadSection';
+import TestimonialsSection from '../components/TestimonialsSection';
+import FAQSection from '../components/FAQSection';
+import ContactFooter from '../components/ContactFooter';
 
 export default function HomePage() {
   return (
-    <main style={{ padding: '2rem', textAlign: 'center' }}>
-      {/* Hero section */}
-      <section style={{ marginBottom: '2rem' }}>
-        <Image
-          src="/hero.png"
-          alt="Delicious meals delivered"
-          width={1200}   // replace with your image’s actual intrinsic width
-          height={600}   // replace with your image’s actual intrinsic height
-          priority       // preload for LCP
-        />
-      </section>
-
-      {/* Features section */}
-      <section style={{ marginBottom: '2rem' }}>
-        <Image
-          src="/features.png"
-          alt="App features overview"
-          width={800}
-          height={400}
-        />
-      </section>
-
-      {/* Example call-to-action */}
-      <Link href="/download">
-        <a style={{
-          display: 'inline-block',
-          padding: '1rem 2rem',
-          backgroundColor: '#FFA500',
-          color: '#fff',
-          borderRadius: '4px',
-          textDecoration: 'none',
-          fontWeight: 'bold'
-        }}>
-          Download the App
-        </a>
-      </Link>
-    </main>
+    <>  
+      <NavBar />
+      <HeroSection />
+      <FeaturesSection />
+      <ScreenshotsSection />
+      <HowItWorksSection />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, padding: '60px 20px' }}>
+        <div>
+          <DownloadSection />
+          <FAQSection />
+        </div>
+        <TestimonialsSection />
+      </div>
+      <ContactFooter />
+    </>
   );
 }

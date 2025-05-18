@@ -6,9 +6,9 @@ const roleMiddleware = require('../middlewares/role.middleware');
 
 router.use(authMiddleware());
 // Create, update, delete restricted to admin/restaurant_owner
-router.post('/',  roleMiddleware(['admin','restaurant_owner']), couponController.createCoupon);
-router.put('/:couponId',roleMiddleware(['admin','restaurant_owner']), couponController.updateCoupon);
-router.delete('/:couponId',  roleMiddleware(['admin','restaurant_owner']), couponController.deleteCoupon);
+router.post('/',  roleMiddleware(['restaurant_owner']), couponController.createCoupon);
+router.put('/:couponId',roleMiddleware(['restaurant_owner']), couponController.updateCoupon);
+router.delete('/:couponId',  roleMiddleware(['restaurant_owner']), couponController.deleteCoupon);
 
 // Public or logged-in can fetch coupons
 router.get('/', couponController.getAllCoupons);

@@ -8,13 +8,13 @@ router.use(authMiddleware());
 // ✅ Create new restaurant (only owner or admin)
 router.post('/', 
    
-  roleMiddleware(['admin', 'restaurant_owner']), 
+  roleMiddleware(['restaurant_owner']), 
   restaurantController.createRestaurant
 );
 
 // ✅ Get my own restaurants
 router.get('/mine', 
-  roleMiddleware(['admin', 'restaurant_owner']), 
+  roleMiddleware(['restaurant_owner']), 
   restaurantController.getMyRestaurants
 );
 
@@ -26,7 +26,7 @@ router.get('/',
 
 // ✅ Update restaurant
 router.put('/:id', 
-  roleMiddleware(['admin', 'restaurant_owner']), 
+  roleMiddleware(['restaurant_owner']), 
   restaurantController.updateRestaurant
 );
 

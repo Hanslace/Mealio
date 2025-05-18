@@ -22,7 +22,7 @@ export default function ResetPasswordPage() {
     async function verifyToken() {
       try {
         const res = await fetch(
-          `${process.env.MEALIO_API_URL}/auth/verify-reset-token/${token}`
+          `${process.env.NEXT_PUBLIC_MEALIO_API_URL}/auth/verify-reset-token/${token}`
         );
         if (!res.ok) throw new Error();
         setStatus('form');
@@ -44,7 +44,7 @@ export default function ResetPasswordPage() {
     setSubmitting(true);
     try {
       const res = await fetch(
-        `${process.env.MEALIO_API_URL}/auth/reset-password`,
+        `${process.env.NEXT_PUBLIC_MEALIO_API_URL}/auth/reset-password`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

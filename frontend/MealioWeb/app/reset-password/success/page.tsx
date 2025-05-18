@@ -24,18 +24,7 @@ export default function SuccessPage() {
         <p style={{ marginBottom: '24px' }}>
           Your password has been updated. You can now sign in with your new password.
         </p>
-        <Link href="/login">
-          <a style={{
-            display: 'inline-block',
-            padding: '10px 20px',
-            backgroundColor: '#FFA500',
-            color: '#fff',
-            borderRadius: '4px',
-            textDecoration: 'none'
-          }}>
-            Go to Sign In
-          </a>
-        </Link>
+        
       </div>
     </div>
   );

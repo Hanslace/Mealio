@@ -26,6 +26,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM('open','closed','suspended'),
         defaultValue: 'open'
       },
+      verification_status: {
+        type: DataTypes.ENUM('pending','approved','rejected'),
+        allowNull: false,
+        defaultValue: 'pending'
+      },
       is_deleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false

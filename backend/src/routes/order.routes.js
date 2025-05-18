@@ -4,7 +4,7 @@ const orderController = require('../controllers/order.controller');
 const roleMiddleware = require('../middlewares/role.middleware');
 
 
-router.use(authMiddleware(), roleMiddleware(['customer', 'admin']));
+router.use(authMiddleware(), roleMiddleware(['customer']));
 // Create an order
 router.post('/', orderController.createOrder);
 // Get my orders
