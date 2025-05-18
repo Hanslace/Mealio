@@ -1,8 +1,7 @@
 // app/reset-password/success/page.tsx
-import Link from 'next/link';
 
 export const metadata = {
-  title: 'Password Reset – Mealio'
+  title: 'Password Reset - Mealio'
 };
 
 export default function SuccessPage() {

@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       );
     }
-  } catch (e) {
+  } catch {
     // bad token (invalid/expired)
     return NextResponse.json(
       { error: 'Invalid or expired token' },

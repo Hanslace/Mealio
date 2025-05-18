@@ -3,6 +3,12 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+interface LoginResponse {
+  token?: string;
+  message?: string;
+  error?: string;
+}
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail]       = useState('');
@@ -13,10 +19,12 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
     if (!email.trim() || !password) {
       setError('Please enter both email and password.');
       return;
     }
+
     setLoading(true);
     try {
       // 1) POST to our Next.js API route
@@ -25,15 +33,20 @@ export default function AdminLoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password }),
       });
-      const data = await res.json();
+
+      // 2) Parse & type the JSON
+      const data = (await res.json()) as LoginResponse;
       if (!res.ok) {
-        throw new Error(data.error || data.message || 'Login failed');
+        // data.error (from our proxy) or data.message (from backend)
+        throw new Error(data.error ?? data.message ?? 'Login failed');
       }
 
-      // 2) On success, token cookie is set; just redirect
+      // 3) Success → redirect (cookie is already set by the API route)
       router.replace('/admin');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      // Narrow `unknown` to get a message
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
     } finally {
       setLoading(false);
     }

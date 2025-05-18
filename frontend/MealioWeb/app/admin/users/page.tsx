@@ -5,13 +5,24 @@ import React, { useState, useEffect } from 'react';
 
 const API = process.env.NEXT_PUBLIC_MEALIO_API_URL;
 
+// 1. Define the shape of your user object
+interface User {
+  user_id: number;
+  full_name: string;
+  email: string;
+  is_active: boolean;
+}
+
 export default function AdminUsers() {
-  const [users, setUsers] = useState<any[]>([]);
+  // 2. Use User[] instead of any[]
+  const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
     (async () => {
       const res = await fetch(`${API}/admin/users`);
-      setUsers(await res.json());
+      // 3. Let TS know this is a User[]
+      const data: User[] = await res.json();
+      setUsers(data);
     })();
   }, []);
 
@@ -54,18 +65,14 @@ export default function AdminUsers() {
               <td>{u.user_id}</td>
               <td>{u.full_name}</td>
               <td>{u.email}</td>
-              <td>
-                {u.is_active ? 'Active' : 'Banned'}
-              </td>
+              <td>{u.is_active ? 'Active' : 'Banned'}</td>
               <td>
                 {u.is_active ? (
                   <button onClick={() => ban(u.user_id)}>
                     Ban
                   </button>
                 ) : (
-                  <button
-                    onClick={() => reactivate(u.user_id)}
-                  >
+                  <button onClick={() => reactivate(u.user_id)}>
                     Reactivate
                   </button>
                 )}

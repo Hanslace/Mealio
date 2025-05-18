@@ -3,28 +3,45 @@
 
 import React, { useState, useEffect } from 'react';
 
-const API = process.env.NEXT_PUBLIC_MEALIO_API_URL;
+const API = process.env.NEXT_PUBLIC_MEALIO_API_URL!;
+
+// Define the shape of a restaurant record
+interface Restaurant {
+  restaurant_id: number;
+  restaurant_name: string;
+  verification_status: 'pending' | 'approved' | 'rejected';
+  status: 'active' | 'suspended';
+}
 
 export default function AdminRestaurants() {
-  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
 
   useEffect(() => {
-    (async () => {
+    async function fetchRestaurants() {
       const res = await fetch(`${API}/admin/restaurants`);
-      setRestaurants(await res.json());
-    })();
+      if (res.ok) {
+        const data = (await res.json()) as Restaurant[];
+        setRestaurants(data);
+      }
+    }
+    fetchRestaurants();
   }, []);
 
-  const sendAction = async (
+  async function sendAction(
     id: number,
     action: 'approve' | 'reject' | 'suspend' | 'unsuspend'
-  ) => {
-    await fetch(
+  ) {
+    const res = await fetch(
       `${API}/admin/restaurants/${id}/${action}`,
       { method: 'PUT' }
     );
-    setRestaurants((rs) =>
-      rs.map((r) =>
+    if (!res.ok) {
+      console.error('Action failed', await res.text());
+      return;
+    }
+
+    setRestaurants((current) =>
+      current.map((r) =>
         r.restaurant_id === id
           ? {
               ...r,
@@ -44,12 +61,12 @@ export default function AdminRestaurants() {
           : r
       )
     );
-  };
+  }
 
   return (
     <div>
       <h2>All Restaurants</h2>
-      <table>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
             <th>ID</th>
@@ -69,37 +86,21 @@ export default function AdminRestaurants() {
               <td>
                 {r.verification_status === 'pending' && (
                   <>
-                    <button
-                      onClick={() =>
-                        sendAction(r.restaurant_id, 'approve')
-                      }
-                    >
+                    <button onClick={() => sendAction(r.restaurant_id, 'approve')}>
                       Approve
                     </button>
-                    <button
-                      onClick={() =>
-                        sendAction(r.restaurant_id, 'reject')
-                      }
-                    >
+                    <button onClick={() => sendAction(r.restaurant_id, 'reject')}>
                       Reject
                     </button>
                   </>
                 )}
                 {r.status === 'active' && (
-                  <button
-                    onClick={() =>
-                      sendAction(r.restaurant_id, 'suspend')
-                    }
-                  >
+                  <button onClick={() => sendAction(r.restaurant_id, 'suspend')}>
                     Suspend
                   </button>
                 )}
                 {r.status === 'suspended' && (
-                  <button
-                    onClick={() =>
-                      sendAction(r.restaurant_id, 'unsuspend')
-                    }
-                  >
+                  <button onClick={() => sendAction(r.restaurant_id, 'unsuspend')}>
                     Unsuspend
                   </button>
                 )}

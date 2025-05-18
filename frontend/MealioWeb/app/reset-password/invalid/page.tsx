@@ -1,6 +1,4 @@
 // app/reset-password/invalid/page.tsx
-import Link from 'next/link';
-
 export const metadata = {
   title: 'Reset Link Expired – Mealio'
 };
