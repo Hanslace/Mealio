@@ -25,7 +25,7 @@ module.exports.register = async (req, res) => {
     // generate a 24h‐valid verification token
     const token = crypto.randomBytes(32).toString('hex');
     newUser.verification_token         = token;
-    newUser.verification_token_expires = Date.now() + 24 * 60 * 60 * 1000;
+    newUser.verification_token_expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await newUser.save();
 
     // send verification email
@@ -88,7 +88,7 @@ module.exports.resendVerification = async (req, res) => {
     // regen token & expiry
     const token = crypto.randomBytes(32).toString('hex');
     user.verification_token         = token;
-    user.verification_token_expires = Date.now() + 24 * 60 * 60 * 1000;
+    user.verification_token_expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await user.save();
 
     const link = `${process.env.WEB_URL}/verify-email?token=${token}`;
@@ -182,7 +182,7 @@ module.exports.forgotPassword = async (req, res) => {
     user.password_reset_sent_at = now;
     await user.save();
 
-    const resetUrl = `${process.env.WEB_URL}/reset-password/${token}`;
+    const resetUrl = `${process.env.WEB_URL}reset-password/${token}`;
     const html     = `
       <p>You requested a password reset. Click <a href="${resetUrl}">here</a> to reset.
       Link expires in 1 hour.</p>

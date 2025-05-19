@@ -7,11 +7,14 @@ import RegisterScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import SignupSuccessScreen from '../screens/auth/SignupSuccessScreen';
 
+
+import { UserRole } from '../context/AuthContext';
+
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
-  SignupSuccess: { email: string; password: string ; pushToken: string};
+  SignupSuccess: { email: string; password: string ; pushToken: string ; role : UserRole;  restaurantName: string; licenseNumber: string; address: string; driverLicense: string; vehicleType: string};
 };
 
 const Stack = createStackNavigator<AuthStackParamList>();

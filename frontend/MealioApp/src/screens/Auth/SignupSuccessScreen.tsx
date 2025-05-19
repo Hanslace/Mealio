@@ -4,7 +4,9 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { AuthStackParamList } from '../../navigation/AuthNavigator';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth , UserRole} from '../../context/AuthContext';
+import { createRestaurant } from '../../api/restaurant.api';
+import { createDeliveryProfile } from '../../api/deliveryPersonnel.api';
 
 
 
@@ -14,10 +16,8 @@ export default function SignupSuccessScreen() {
     StackNavigationProp<AuthStackParamList, 'SignupSuccess'>
   >();
   const route = useRoute();
-  const { email, password, pushToken } = (route.params ?? {}) as {
-    email: string;
-    password: string;
-    pushToken: string;
+  const { email, password, pushToken,role,restaurantName,licenseNumber,address, driverLicense,vehicleType } = (route.params ?? {}) as {
+    email: string; password: string ; pushToken: string ; role : UserRole;  restaurantName: string; licenseNumber: string; address : string ;driverLicense: string; vehicleType: string
   };
 
   useEffect(() => {
@@ -26,6 +26,20 @@ export default function SignupSuccessScreen() {
         try {
           // use your AuthContext.login, which handles storing token & flipping isLoggedIn
           await login(email, password, pushToken);
+
+          // extras
+          if (role === 'restaurant_owner') {
+            await createRestaurant({
+              restaurant_name: restaurantName,
+              license_number:  licenseNumber,
+              address,
+            });
+          } else if (role === 'delivery_personnel') {
+            await createDeliveryProfile({
+              driver_license_no: driverLicense,
+              vehicle_type:      vehicleType,
+            });
+          }
           // no need to call navigation.replace(); the RootNavigator will switch stacks
         } catch (err) {
           console.error('Auto-login failed:', err);

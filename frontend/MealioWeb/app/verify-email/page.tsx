@@ -1,5 +1,4 @@
 // app/verify-email/page.tsx
-import Link from 'next/link';
 
 interface VerifyEmailPageProps {
   // Next.js 15 passes searchParams as a Promise
@@ -47,37 +46,6 @@ export default async function VerifyEmailPage({
     <main style={{ maxWidth: 480, margin: '4rem auto', textAlign: 'center' }}>
       <h1>{ok ? '✅ Email Verified' : '❌ Verification Failed'}</h1>
       <p>{message}</p>
-      <div style={{ marginTop: '2rem' }}>
-        {ok ? (
-          <Link
-            href="/login"
-            style={{
-              display: 'inline-block',
-              padding: '0.5rem 1rem',
-              background: '#0070f3',
-              color: '#fff',
-              borderRadius: 4,
-              textDecoration: 'none',
-            }}
-          >
-            Go to Login
-          </Link>
-        ) : (
-          <Link
-            href="/resend-verification"
-            style={{
-              display: 'inline-block',
-              padding: '0.5rem 1rem',
-              background: '#e00',
-              color: '#fff',
-              borderRadius: 4,
-              textDecoration: 'none',
-            }}
-          >
-            Resend Verification Email
-          </Link>
-        )}
-      </div>
     </main>
   );
 }

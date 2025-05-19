@@ -21,8 +21,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { useAuth, UserRole } from '../../context/AuthContext';
 import type { AuthStackParamList } from '../../navigation/AuthNavigator';
-import { createRestaurant } from '../../api/restaurant.api';
-import { createDeliveryProfile } from '../../api/deliveryPersonnel.api';
 
 type RegisterNavProp = StackNavigationProp<AuthStackParamList, 'Register'>;
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -111,24 +109,19 @@ export default function RegisterScreen() {
       // register
       await register(fullName.trim(), email.trim(), password, role, pushToken);
 
-      // extras
-      if (role === 'restaurant_owner') {
-        await createRestaurant({
-          restaurant_name: restaurantName,
-          license_number:  licenseNumber,
-          address,
-        });
-      } else if (role === 'delivery_personnel') {
-        await createDeliveryProfile({
-          driver_license_no: driverLicense,
-          vehicle_type:      vehicleType,
-        });
-      }
+      
 
       nav.replace('SignupSuccess', {
         email: email.trim(),
         password,
-        pushToken
+        pushToken,
+        role,
+        restaurantName,
+        licenseNumber,
+        address,
+        driverLicense,
+        vehicleType
+
       });
 
     } catch (err: any) {
