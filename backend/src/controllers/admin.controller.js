@@ -8,6 +8,29 @@ const Notification       = db.Notification;
 
 const sendEmail = require('../utils/sendEmail');  // your nodemailer helper
 
+exports.me = async (req, res, next) => {
+  try {
+    // req.userId is set by your auth middleware after JWT verify
+    const user = await User.findByPk(req.userId, {
+      attributes: ['user_id', 'full_name', 'email', 'role']
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // send back only the fields you need
+    res.json({
+      user_id:   user.user_id,
+      full_name: user.full_name,
+      email:     user.email,
+      role:      user.role
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ─── Dashboard ───────────────────────────────────────
 module.exports.getDashboardMetrics = async (req, res, next) => {
   try {

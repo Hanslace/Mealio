@@ -3,8 +3,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-const API = process.env.NEXT_PUBLIC_MEALIO_API_URL;
-
 // 1. Define the shape of your user object
 interface User {
   user_id: number;
@@ -19,7 +17,7 @@ export default function AdminUsers() {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`${API}/admin/users`);
+      const res = await fetch(`/api/admin/users`);
       // 3. Let TS know this is a User[]
       const data: User[] = await res.json();
       setUsers(data);
@@ -27,7 +25,7 @@ export default function AdminUsers() {
   }, []);
 
   const ban = async (id: number) => {
-    await fetch(`${API}/admin/users/${id}/ban`, { method: 'PUT' });
+    await fetch(`/api/admin/users/${id}/ban`, { method: 'PUT' });
     setUsers((u) =>
       u.map((x) =>
         x.user_id === id ? { ...x, is_active: false } : x
@@ -36,7 +34,7 @@ export default function AdminUsers() {
   };
 
   const reactivate = async (id: number) => {
-    await fetch(`${API}/admin/users/${id}/reactivate`, {
+    await fetch(`/api/admin/users/${id}/reactivate`, {
       method: 'PUT',
     });
     setUsers((u) =>

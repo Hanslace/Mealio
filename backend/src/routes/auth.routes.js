@@ -15,6 +15,8 @@ router.post(
   validationCheck,
   authController.register
 );
+router.get( '/verify-email',         authCtrl.verifyEmail);
+router.post('/resend-verification',  authCtrl.resendVerification);
 
 router.post('/login', authController.login);
 

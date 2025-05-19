@@ -124,7 +124,13 @@ export default function RegisterScreen() {
           vehicle_type:      vehicleType,
         });
       }
-      // context will switch to appropriate flow
+
+      nav.replace('SignupSuccess', {
+        email: email.trim(),
+        password,
+        pushToken
+      });
+
     } catch (err: any) {
       console.error(err);
       const msg =

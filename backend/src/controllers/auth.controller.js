@@ -5,9 +5,9 @@ const crypto       = require('crypto');
 const { Op }       = require('sequelize');
 const db           = require('../models');
 const User         = db.User;
-const sendEmail    = require('../utils/sendEmail'); // your mailer helper
+const sendEmail    = require('../utils/sendEmail');
 
-// ─── Register ─────────────────────────────────────────────────────────────────
+// ─── Register (with email‐verification) ─────────────────────────────────────
 module.exports.register = async (req, res) => {
   try {
     const { full_name, email, password, role, push_token } = req.body;
@@ -19,14 +19,90 @@ module.exports.register = async (req, res) => {
       password_hash: hashedPassword,
       role,
       push_token: push_token || null,
+      // is_verified defaults to false via migration
     });
 
-    return res.status(201).json({ message: 'User registered' });
+    // generate a 24h‐valid verification token
+    const token = crypto.randomBytes(32).toString('hex');
+    newUser.verification_token         = token;
+    newUser.verification_token_expires = Date.now() + 24 * 60 * 60 * 1000;
+    await newUser.save();
+
+    // send verification email
+    const link = `${process.env.WEB_URL}/verify-email?token=${token}`;
+    await sendEmail({
+      to:      email,
+      subject: 'Please verify your Mealio account',
+      html:    `<p>Click <a href="${link}">here</a> to verify your email address.</p>`
+    });
+
+    return res.status(201).json({
+      message: 'User registered. Verification email sent.',
+      user_id: newUser.user_id,
+      email:   newUser.email
+    });
   } catch (err) {
     console.error('Registration error:', err);
     return res.status(500).json({ error: 'Registration failed' });
   }
 };
+
+// ─── Verify Email ───────────────────────────────────────────────────────────
+module.exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+    const user = await User.findOne({
+      where: {
+        verification_token:       token,
+        verification_token_expires: { [Op.gt]: new Date() }
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+
+    user.is_verified               = true;
+    user.verification_token        = null;
+    user.verification_token_expires = null;
+    await user.save();
+
+    return res.json({ success: true, message: 'Email verified' });
+  } catch (err) {
+    console.error('verifyEmail error:', err);
+    return res.status(500).json({ error: 'Could not verify email' });
+  }
+};
+
+// ─── Resend Verification ────────────────────────────────────────────────────
+module.exports.resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ error: 'No user with that email' });
+    }
+
+    // regen token & expiry
+    const token = crypto.randomBytes(32).toString('hex');
+    user.verification_token         = token;
+    user.verification_token_expires = Date.now() + 24 * 60 * 60 * 1000;
+    await user.save();
+
+    const link = `${process.env.WEB_URL}/verify-email?token=${token}`;
+    await sendEmail({
+      to:      email,
+      subject: 'Your new Mealio verification link',
+      html:    `<p>Click <a href="${link}">here</a> to verify your email address.</p>`
+    });
+
+    return res.json({ message: 'Verification email resent' });
+  } catch (err) {
+    console.error('resendVerification error:', err);
+    return res.status(500).json({ error: 'Could not resend verification' });
+  }
+};
+
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 module.exports.login = async (req, res) => {

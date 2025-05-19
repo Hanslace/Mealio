@@ -104,7 +104,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // register endpoint
     await axiosInstance.post('/auth/register', { full_name, email, password, role, push_token });
     // then log in to get JWT and populate context
-    await login(email, password, push_token);
   };
 
   const logout = async () => {

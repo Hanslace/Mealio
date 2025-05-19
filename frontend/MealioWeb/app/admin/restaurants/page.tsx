@@ -3,8 +3,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-const API = process.env.NEXT_PUBLIC_MEALIO_API_URL!;
-
 // Define the shape of a restaurant record
 interface Restaurant {
   restaurant_id: number;
@@ -18,7 +16,7 @@ export default function AdminRestaurants() {
 
   useEffect(() => {
     async function fetchRestaurants() {
-      const res = await fetch(`${API}/admin/restaurants`);
+      const res = await fetch(`/api/admin/restaurants`);
       if (res.ok) {
         const data = (await res.json()) as Restaurant[];
         setRestaurants(data);
@@ -32,7 +30,7 @@ export default function AdminRestaurants() {
     action: 'approve' | 'reject' | 'suspend' | 'unsuspend'
   ) {
     const res = await fetch(
-      `${API}/admin/restaurants/${id}/${action}`,
+      `/api/admin/restaurants/${id}/${action}`,
       { method: 'PUT' }
     );
     if (!res.ok) {

@@ -3,8 +3,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-const API = process.env.NEXT_PUBLIC_MEALIO_API_URL!;
-
 // Define the shape of a delivery‐person record
 interface DeliveryPerson {
   delivery_personnel_id: number;
@@ -20,7 +18,7 @@ export default function AdminDelivery() {
 
   useEffect(() => {
     async function fetchList() {
-      const res = await fetch(`${API}/admin/delivery-personnel`);
+      const res = await fetch(`/api/admin/delivery-personnel`);
       if (res.ok) {
         const data = (await res.json()) as DeliveryPerson[];
         setList(data);
@@ -31,34 +29,32 @@ export default function AdminDelivery() {
 
   async function sendAction(
     id: number,
-    action: 'verify' | 'suspend' | 'unsuspend'
-  ) {
+    action: 'verify' | 'reject' | 'suspend' | 'unsuspend'
+    ) {
     const res = await fetch(
-      `${API}/admin/delivery-personnel/${id}/${action}`,
-      { method: 'PUT' }
+        `/api/admin/delivery-personnel/${id}/${action}`,
+        { method: 'PUT' }
     );
-    if (!res.ok) {
-      console.error('Action failed', await res.text());
-      return;
+    if (!res.ok) { console.error('Action failed', await res.text()); return; }
+
+    setList(current =>
+        current.map(d =>
+        d.delivery_personnel_id === id
+            ? {
+                ...d,
+                is_verified: action === 'verify' ? true
+                        : action === 'reject' ? false
+                        : d.is_verified,
+                status:
+                action === 'suspend'   ? 'suspended'
+                : action === 'unsuspend' ? 'active'
+                : d.status,
+            }
+            : d
+        )
+    );
     }
 
-    setList((current) =>
-      current.map((d) =>
-        d.delivery_personnel_id === id
-          ? {
-              ...d,
-              is_verified: action === 'verify' ? true : d.is_verified,
-              status:
-                action === 'suspend'
-                  ? 'suspended'
-                  : action === 'unsuspend'
-                  ? 'active'
-                  : d.status,
-            }
-          : d
-      )
-    );
-  }
 
   return (
     <div>
@@ -84,35 +80,28 @@ export default function AdminDelivery() {
               <td>{d.vehicle_type}</td>
               <td>{d.is_verified ? 'Yes' : 'No'}</td>
               <td>{d.status}</td>
-              <td>
+            <td>
                 {!d.is_verified && (
-                  <button
-                    onClick={() =>
-                      sendAction(d.delivery_personnel_id, 'verify')
-                    }
-                  >
-                    Verify
-                  </button>
+                    <>
+                    <button onClick={() => sendAction(d.delivery_personnel_id, 'verify')}>
+                        Verify
+                    </button>
+                    <button onClick={() => sendAction(d.delivery_personnel_id, 'reject')}>
+                        Reject
+                    </button>
+                    </>
                 )}
                 {d.status === 'active' && (
-                  <button
-                    onClick={() =>
-                      sendAction(d.delivery_personnel_id, 'suspend')
-                    }
-                  >
+                    <button onClick={() => sendAction(d.delivery_personnel_id, 'suspend')}>
                     Suspend
-                  </button>
+                    </button>
                 )}
                 {d.status === 'suspended' && (
-                  <button
-                    onClick={() =>
-                      sendAction(d.delivery_personnel_id, 'unsuspend')
-                    }
-                  >
+                    <button onClick={() => sendAction(d.delivery_personnel_id, 'unsuspend')}>
                     Unsuspend
-                  </button>
+                    </button>
                 )}
-              </td>
+                </td>
             </tr>
           ))}
         </tbody>

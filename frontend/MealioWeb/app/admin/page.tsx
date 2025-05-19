@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 
-const API = process.env.NEXT_PUBLIC_MEALIO_API_URL!;
-
 // -- Define your data shapes --
 interface Metrics {
   totalUsers: number;
@@ -43,25 +41,25 @@ export default function AdminHome() {
   useEffect(() => {
     async function loadAll() {
       // Dashboard metrics
-      const dRes = await fetch(`${API}/admin/dashboard`);
+      const dRes = await fetch(`/api/admin/dashboard`);
       if (dRes.ok) {
         setMetrics((await dRes.json()) as Metrics);
       }
 
       // Pending restaurants
-      const prRes = await fetch(`${API}/admin/restaurants?status=pending`);
+      const prRes = await fetch(`/api/admin/restaurants?status=pending`);
       if (prRes.ok) {
         setPendingRestaurants((await prRes.json()) as Restaurant[]);
       }
 
       // Pending delivery personnel
-      const pdRes = await fetch(`${API}/admin/delivery-personnel?status=pending`);
+      const pdRes = await fetch(`/api/admin/delivery-personnel?status=pending`);
       if (pdRes.ok) {
         setPendingDelivery((await pdRes.json()) as DeliveryPerson[]);
       }
 
       // Recent users (just take first 5)
-      const uRes = await fetch(`${API}/admin/users`);
+      const uRes = await fetch(`/api/admin/users`);
       if (uRes.ok) {
         const allUsers = (await uRes.json()) as User[];
         setRecentUsers(allUsers.slice(0, 5));
@@ -72,9 +70,9 @@ export default function AdminHome() {
 
   async function handleNotify(e: FormEvent) {
     e.preventDefault();
-    let url = `${API}/admin/notify/all-users`;
-    if (audience === 'restaurants') url = `${API}/admin/notify/all-restaurants`;
-    if (audience === 'delivery')    url = `${API}/admin/notify/all-delivery-personnel`;
+    let url = `/api/admin/notify/all-users`;
+    if (audience === 'restaurants') url = `/api/admin/notify/all-restaurants`;
+    if (audience === 'delivery')    url = `/api/admin/notify/all-delivery-personnel`;
 
     await fetch(url, {
       method: 'POST',
