@@ -6,7 +6,7 @@ console.log(adminController);
 // All admin routes require user to be admin
 router.use(authMiddleware(), roleMiddleware(['admin']));
 
-router.get('/me', authAdmin, adminCtrl.me);
+router.get('/me', adminController.me);
 
 
 // Dashboard metrics
