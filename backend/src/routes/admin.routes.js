@@ -2,7 +2,7 @@ const router = require('express').Router();
 const authMiddleware  = require('../middlewares/auth.middleware');
 const roleMiddleware  = require('../middlewares/role.middleware');
 const adminController = require('../controllers/admin.controller');
-console.log(adminController);
+
 // All admin routes require user to be admin
 router.use(authMiddleware(), roleMiddleware(['admin']));
 

@@ -30,11 +30,13 @@ module.exports.register = async (req, res) => {
 
     // send verification email
     const link = `${process.env.WEB_URL}/verify-email?token=${token}`;
-    await sendEmail({
-      to:      email,
-      subject: 'Please verify your Mealio account',
-      html:    `<p>Click <a href="${link}">here</a> to verify your email address.</p>`
-    });
+    // if your helper is defined as sendEmail(to, subject, html)
+    await sendEmail(
+      email,
+      'Please verify your Mealio account',
+      `<p>Click <a href="${link}">here</a> to verify your email address.</p>`
+    );
+
 
     return res.status(201).json({
       message: 'User registered. Verification email sent.',
@@ -90,11 +92,11 @@ module.exports.resendVerification = async (req, res) => {
     await user.save();
 
     const link = `${process.env.WEB_URL}/verify-email?token=${token}`;
-    await sendEmail({
-      to:      email,
-      subject: 'Your new Mealio verification link',
-      html:    `<p>Click <a href="${link}">here</a> to verify your email address.</p>`
-    });
+    await sendEmail(
+      email,
+      'Your new Mealio verification link',
+      `<p>Click <a href="${link}">here</a> to verify your email address.</p>`
+    );
 
     return res.json({ message: 'Verification email resent' });
   } catch (err) {
