@@ -1,7 +1,7 @@
 // app/admin/layout.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -9,21 +9,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const path = usePathname() || '';
   const router = useRouter();
 
-  const [adminName, setAdminName] = useState<string>('');
 
-  // 1) On mount, grab current admin info
-  useEffect(() => {
-    (async () => {
-      const res = await fetch('/api/admin/me');
-      if (res.ok) {
-        const { full_name } = await res.json();
-        setAdminName(full_name);
-      } else {
-        // not authenticated → go to login
-        router.push('/admin/login');
-      }
-    })();
-  }, [router]);
+ 
 
   // 2) Logout handler
   const handleLogout = async () => {
@@ -51,14 +38,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* left‐side links */}
         <div style={{ display: 'flex', gap: '1rem' }}>
           <Link href="/admin">Dashboard</Link>
-          <Link href="/admin/users">Users</Link>
+          <Link href="/admin/customers">Customers</Link>
           <Link href="/admin/restaurants">Restaurants</Link>
           <Link href="/admin/delivery-personnel">Delivery Personnel</Link>
         </div>
 
         {/* right‐side admin info + logout */}
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          {adminName && <span>👤 {adminName}</span>}
           <button
             onClick={handleLogout}
             style={{

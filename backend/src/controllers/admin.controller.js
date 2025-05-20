@@ -1,119 +1,100 @@
 const { Op } = require('sequelize');
 const db      = require('../models');
 const User    = db.User;
+const Customer = db.Customer;                    // <— new
 const Order   = db.Order;
 const Restaurant = db.Restaurant;
 const DeliveryPersonnel = db.DeliveryPersonnel;
 const Notification       = db.Notification;
 
-const sendEmail = require('../utils/sendEmail');  // your nodemailer helper
+const sendEmail = require('../utils/sendEmail');
 
-exports.me = async (req, res, next) => {
+
+
+// ─── Dashboard (unchanged) ────────────────────────────────────────────
+exports.getDashboardMetrics = async (req, res, next) => {
   try {
-    // req.userId is set by your auth middleware after JWT verify
-    const user = await User.findByPk(req.userId, {
-      attributes: ['user_id', 'full_name', 'email', 'role']
-    });
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // send back only the fields you need
-    res.json({
-      user_id:   user.user_id,
-      full_name: user.full_name,
-      email:     user.email,
-      role:      user.role
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// ─── Dashboard ───────────────────────────────────────
-module.exports.getDashboardMetrics = async (req, res, next) => {
-  try {
-    const totalUsers       = await User.count();
+    const totalUsers       = await User.count({ where:{ role:'customer' }});
     const totalRestaurants = await Restaurant.count();
     const totalOrders      = await Order.count();
     const [[{ total_revenue }]] = await db.sequelize.query(
       'SELECT SUM(net_amount) AS total_revenue FROM orders'
     );
-
-    res.json({
-      totalUsers,
-      totalRestaurants,
-      totalOrders,
-      totalRevenue: total_revenue || 0,
-    });
+    res.json({ totalUsers, totalRestaurants, totalOrders, totalRevenue: total_revenue||0 });
   } catch (err) {
     next(err);
   }
 };
 
-// ─── Users ────────────────────────────────────────────
-module.exports.listUsers = async (req, res, next) => {
+// ─── List Users (with active flag) ──────────────────────────────────
+exports.listUsers = async (req, res, next) => {
   try {
-    const { role } = req.query; // optional filter
-    let whereClause = {};
-    if (role) {
-      whereClause.role = role;
-    }
-
+    const { role } = req.query; 
     const users = await User.findAll({
-      where: whereClause,
-      attributes: { exclude: ['password_hash'] }
+      where: role ? { role } : {},
+      attributes: { exclude: ['password_hash'] },
+      include: [{
+        model: Customer,
+        as: 'Customer',
+        attributes: ['is_active']
+      }]
     });
-    return res.json(users);
+    // merge is_active up to root
+    const result = users.map(u => ({
+      ...u.toJSON(),
+      is_active: u.Customer?.is_active ?? false
+    }));
+    res.json(result);
   } catch (err) {
     next(err);
   }
 };
 
-async function notifyUser(user, subject, message, type, io) {
-  // 4️⃣ Email
-  if (user.email) {
-    await sendEmail(user.email, subject, `<p>${message}</p>`);
+async function notifyUser(userEmail, subject, message) {
+  if (userEmail) {
+    await sendEmail(userEmail, subject, `<p>${message}</p>`);
   }
 }
 
-// ─── Ban User ─────────────────────────────────────────
-module.exports.banUser = async (req, res, next) => {
+// ─── Ban / Reactivate Customer ───────────────────────────────────────
+exports.banUser = async (req, res, next) => {
   try {
-    const { userId } = req.params;
+    const userId = req.params.userId;
+    const customer = await Customer.findByPk(userId);
+    if (!customer) return res.status(404).json({ error: 'Customer not found' });
+
+    customer.is_active = false;
+    await customer.save();
+
+    // lookup User for email
     const user = await User.findByPk(userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    await notifyUser(user.email,
+      'Your account has been banned',
+      'An administrator has deactivated your account. Contact support if this is an error.'
+    );
 
-    user.is_active = false;
-    await user.save();
-
-    const subject = 'Your account has been banned';
-    const message = 'An administrator has deactivated your account. Please contact support if you believe this is an error.';
-    // req.app.get('io') is your Socket.IO server
-    await notifyUser(user, subject, message, 'user-ban', req.app.get('io'));
-
-    res.json({ message: `User ${userId} banned.`, user });
+    res.json({ message:`Customer ${userId} banned.`, is_active: false });
   } catch (err) {
     next(err);
   }
 };
 
-// ─── Reactivate User ──────────────────────────────────
-module.exports.reactivateUser = async (req, res, next) => {
+exports.reactivateUser = async (req, res, next) => {
   try {
-    const { userId } = req.params;
+    const userId = req.params.userId;
+    const customer = await Customer.findByPk(userId);
+    if (!customer) return res.status(404).json({ error: 'Customer not found' });
+
+    customer.is_active = true;
+    await customer.save();
+
     const user = await User.findByPk(userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    await notifyUser(user.email,
+      'Your account has been reactivated',
+      'Good news—an administrator has reactivated your account. You can now log in again.'
+    );
 
-    user.is_active = true;
-    await user.save();
-
-    const subject = 'Your account has been reactivated';
-    const message = 'Good news—an administrator has reactivated your account. You can now log in again.';
-    await notifyUser(user, subject, message, 'user-reactivate', req.app.get('io'));
-
-    res.json({ message: `User ${userId} reactivated.`, user });
+    res.json({ message:`Customer ${userId} reactivated.`, is_active: true });
   } catch (err) {
     next(err);
   }
@@ -274,7 +255,7 @@ module.exports.unsuspendDelivery = async (req, res, next) => {
     const dp = await DeliveryPersonnel.findByPk(id);
     if (!dp) return res.status(404).json({ error: 'Not found' });
 
-    dp.status = 'not_active';
+    dp.status = 'offline';
     await dp.save();
 
     const msg = 'Your delivery account has been reactivated.';

@@ -7,47 +7,132 @@ const db           = require('../models');
 const User         = db.User;
 const sendEmail    = require('../utils/sendEmail');
 
-// ─── Register (with email‐verification) ─────────────────────────────────────
-module.exports.register = async (req, res) => {
-  try {
-    const { full_name, email, password, role, push_token } = req.body;
+/* controllers/auth.controller.js */
+const bcrypt   = require('bcrypt');
+const crypto   = require('crypto');
+const {
+  sequelize,                 // ← your Sequelize instance
+  User,
+  Customer,
+  Restaurant,
+  Address,
+  DeliveryPersonnel,
+  PushToken,
+} = require('../models');
+const sendEmail = require('../utils/sendEmail');
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({
+// ─── Register (with email-verification) ───────────────────────────────
+module.exports.register = async (req, res) => {
+  const t = await sequelize.transaction();
+  try {
+    // ── 1. extract body ────────────────────────────────────────────
+    const {
       full_name,
       email,
-      password_hash: hashedPassword,
+      password,
       role,
-      push_token: push_token || null,
-      // is_verified defaults to false via migration
-    });
+      phone,
+      push_token,
+      restaurant,      // { restaurant_name, license_number, cuisine_type, opening_time, closing_time, address_line1, city, country }
+      delivery,        // { driver_license_no, license_expiry_date, vehicle_type, vehicle_plate_number, iban }
+    } = req.body;
 
-    // generate a 24h‐valid verification token
+    // ── 2. create User row ─────────────────────────────────────────
+    const password_hash = await bcrypt.hash(password, 10);
+    const user = await User.create(
+      { full_name, email, password_hash, role, phone: phone ?? null },
+      { transaction: t },
+    );
+
+    // Optionally create a baseline Customer profile for every user
+    if (role === 'customer') {
+      await Customer.create({ user_id: user.user_id }, { transaction: t });
+    }
+
+    // ── 3. restaurant_owner extras ────────────────────────────────
+    if (role === 'restaurant_owner') {
+      if (!restaurant) throw new Error('Restaurant details missing');
+
+      // 3a. address
+      const addr = await Address.create(
+        {
+          user_id:       user.user_id,
+          address_line1: restaurant.address_line1,
+          city:          restaurant.city,
+          country:       restaurant.country,
+        },
+        { transaction: t },
+      );
+
+      // 3b. restaurant
+      await Restaurant.create(
+        {
+          owner_id:        user.user_id,
+          address_id:      addr.address_id,
+          restaurant_name: restaurant.restaurant_name,
+          license_number:  restaurant.license_number,
+          cuisine_type:    restaurant.cuisine_type,
+          opening_time:    restaurant.opening_time,
+          closing_time:    restaurant.closing_time,
+          contact_phone:   phone ?? null,
+        },
+        { transaction: t },
+      );
+    }
+
+    // ── 4. delivery_personnel extras ───────────────────────────────
+    if (role === 'delivery_personnel') {
+      if (!delivery) throw new Error('Delivery profile missing');
+
+      await DeliveryPersonnel.create(
+        {
+          user_id:              user.user_id,
+          driver_license_no:    delivery.driver_license_no,
+          license_expiry_date:  delivery.license_expiry_date,
+          vehicle_type:         delivery.vehicle_type,
+          vehicle_plate_number: delivery.vehicle_plate_number,
+          iban:                 delivery.iban,
+        },
+        { transaction: t },
+      );
+    }
+
+    // ── 5. push token (separate table) ────────────────────────────
+    if (push_token) {
+      await PushToken.create(
+        { user_id: user.user_id, push_token },
+        { transaction: t },
+      );
+    }
+
+    // ── 6. email-verification token ───────────────────────────────
     const token = crypto.randomBytes(32).toString('hex');
-    newUser.verification_token         = token;
-    newUser.verification_token_expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await newUser.save();
+    user.verification_token         = token;
+    user.verification_token_expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await user.save({ transaction: t });
 
-    // send verification email
     const link = `${process.env.WEB_URL}/verify-email?token=${token}`;
-    // if your helper is defined as sendEmail(to, subject, html)
     await sendEmail(
       email,
       'Please verify your Mealio account',
-      `<p>Click <a href="${link}">here</a> to verify your email address.</p>`
+      `<p>Click <a href="${link}">here</a> to verify your email address.</p>`,
     );
 
-
+    // ── 7. commit & respond ───────────────────────────────────────
+    await t.commit();
     return res.status(201).json({
       message: 'User registered. Verification email sent.',
-      user_id: newUser.user_id,
-      email:   newUser.email
+      user_id: user.user_id,
+      email:   user.email,
     });
+
   } catch (err) {
     console.error('Registration error:', err);
+    await t.rollback();
     return res.status(500).json({ error: 'Registration failed' });
   }
 };
+
 
 // ─── Verify Email ───────────────────────────────────────────────────────────
 module.exports.verifyEmail = async (req, res) => {

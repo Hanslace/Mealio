@@ -3,47 +3,36 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import type { AuthStackParamList } from '../../navigation/AuthNavigator';
-import { useAuth , UserRole} from '../../context/AuthContext';
-import { createRestaurant } from '../../api/restaurant.api';
-import { createDeliveryProfile } from '../../api/deliveryPersonnel.api';
-
-
+import type { AuthStackParamList }   from '../../navigation/AuthNavigator';
+import { useAuth, UserRole }         from '../../context/AuthContext';
 
 export default function SignupSuccessScreen() {
-  const { login } = useAuth();    
+  const { login } = useAuth();
+
   const navigation = useNavigation<
     StackNavigationProp<AuthStackParamList, 'SignupSuccess'>
   >();
+
   const route = useRoute();
-  const { email, password, pushToken,role,restaurantName,licenseNumber,address, driverLicense,vehicleType } = (route.params ?? {}) as {
-    email: string; password: string ; pushToken: string ; role : UserRole;  restaurantName: string; licenseNumber: string; address : string ;driverLicense: string; vehicleType: string
+  const { email, password, pushToken, role } = (route.params ?? {}) as {
+    email: string;
+    password: string;
+    pushToken: string;
+    role: UserRole;
   };
 
   useEffect(() => {
     const timer = setTimeout(() => {
       (async () => {
         try {
-          // use your AuthContext.login, which handles storing token & flipping isLoggedIn
+          // AuthContext.login stores token & flips isLoggedIn
           await login(email, password, pushToken);
 
-          // extras
-          if (role === 'restaurant_owner') {
-            await createRestaurant({
-              restaurant_name: restaurantName,
-              license_number:  licenseNumber,
-              address,
-            });
-          } else if (role === 'delivery_personnel') {
-            await createDeliveryProfile({
-              driver_license_no: driverLicense,
-              vehicle_type:      vehicleType,
-            });
-          }
-          // no need to call navigation.replace(); the RootNavigator will switch stacks
+          // No extra calls here: RegisterScreen already
+          // forwarded role-specific details to the backend.
+          // RootNavigator will auto-switch stacks on login success.
         } catch (err) {
           console.error('Auto-login failed:', err);
-          // if you really want to send them back to login on error:
           navigation.replace('Login');
         }
       })();
@@ -63,21 +52,8 @@ export default function SignupSuccessScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#444',
-  },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center',
+               padding: 20, backgroundColor: '#fff' },
+  title:     { fontSize: 24, fontWeight: 'bold', marginBottom: 12 },
+  subtitle:  { fontSize: 16, textAlign: 'center', color: '#444' },
 });

@@ -4,35 +4,53 @@ import { createStackNavigator } from '@react-navigation/stack';
 import DashboardScreen from '../../screens/owner/DashboardScreen';
 import AnalyticsDashboardScreen from '../../screens/owner/AnalyticsDashboardScreen';
 import RestaurantSettingsScreen from '../../screens/owner/RestaurantSettingsScreen';
+import ReviewsScreen from '../../screens/owner/ReviewsScreen';
+
 import MenuItemsScreen from '../../screens/owner/MenuItemsScreen';
 import MenuItemFormScreen from '../../screens/owner/MenuItemFormScreen';
+
 import OrdersScreen from '../../screens/owner/OrdersScreen';
 import OrderDetailsScreen from '../../screens/owner/OrderDetailsScreen';
 import OrderSupportChatScreen from '../../screens/owner/OrderSupportChatScreen';
+import OrderProgressScreen from '../../screens/owner/OrderProgressScreen';
+
 import CouponsScreen from '../../screens/owner/CouponsScreen';
 import CouponFormScreen from '../../screens/owner/CouponFormScreen';
+
 import ChatListScreen from '../../screens/owner/ChatListScreen';
 import ChatRoomScreen from '../../screens/owner/ChatRoomScreen';
+
 import OwnerProfileScreen from '../../screens/owner/ProfileScreen';
 import NotificationsScreen from '../../screens/owner/NotificationsScreen';
 import SettingsScreen from '../../screens/owner/SettingsScreen';
+import PayoutsScreen from '../../screens/owner/PayoutsScreen';
+import PayoutRequestScreen from '../../screens/owner/PayoutRequestScreen';
 
 export type OwnerStackParamList = {
   DashboardMain: undefined;
   AnalyticsDashboard: undefined;
   RestaurantSettings: undefined;
+  Reviews: undefined;
+
   MenuItems: undefined;
   MenuItemForm: { itemId?: number };
+
   OrdersMain: undefined;
   OrderDetails: { orderId: number };
   OrderSupportChat: { orderId: number };
+  OrderProgress: { orderId: number };
+
   CouponsMain: undefined;
   CouponForm: { couponId?: number };
+
   ChatList: undefined;
   ChatRoom: { chatRoomId: number };
+
   ProfileMain: undefined;
   Notifications: undefined;
   Settings: undefined;
+  Payouts: undefined;
+  PayoutRequest: undefined;
 };
 
 const Stack = createStackNavigator<OwnerStackParamList>();
@@ -43,7 +61,7 @@ export function DashboardStack() {
       <Stack.Screen
         name="DashboardMain"
         component={DashboardScreen}
-        options={{ title: 'Dashboard'  }}
+        options={{ title: 'Dashboard' }}
       />
       <Stack.Screen
         name="AnalyticsDashboard"
@@ -54,6 +72,11 @@ export function DashboardStack() {
         name="RestaurantSettings"
         component={RestaurantSettingsScreen}
         options={{ title: 'Restaurant Settings' }}
+      />
+      <Stack.Screen
+        name="Reviews"
+        component={ReviewsScreen}
+        options={{ title: 'Reviews' }}
       />
     </Stack.Navigator>
   );
@@ -93,6 +116,11 @@ export function OrdersStack() {
         name="OrderSupportChat"
         component={OrderSupportChatScreen}
         options={{ title: 'Support Chat' }}
+      />
+      <Stack.Screen
+        name="OrderProgress"
+        component={OrderProgressScreen}
+        options={{ title: 'Order Progress' }}
       />
     </Stack.Navigator>
   );
@@ -145,6 +173,16 @@ export function ProfileStack() {
         name="Settings"
         component={SettingsScreen}
         options={{ title: 'Settings' }}
+      />
+      <Stack.Screen
+        name="Payouts"
+        component={PayoutsScreen}
+        options={{ title: 'Payouts' }}
+      />
+      <Stack.Screen
+        name="PayoutRequest"
+        component={PayoutRequestScreen}
+        options={{ title: 'Request Payout' }}
       />
     </Stack.Navigator>
   );

@@ -4,7 +4,7 @@ import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 
 // -- Define your data shapes --
 interface Metrics {
-  totalUsers: number;
+  totalUsers: number;             // still called totalUsers in API
   totalRestaurants: number;
   totalOrders: number;
   totalRevenue: number;
@@ -13,30 +13,27 @@ interface Metrics {
 interface Restaurant {
   restaurant_id: number;
   restaurant_name: string;
-  // add any other fields you need
 }
 
 interface DeliveryPerson {
   user_id: number;
   driver_license_no: string;
-  // add any other fields you need
 }
 
-interface User {
+interface Customer {
   user_id: number;
   full_name: string;
-  // add any other fields you need
 }
 
 export default function AdminHome() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [pendingRestaurants, setPendingRestaurants] = useState<Restaurant[]>([]);
   const [pendingDelivery, setPendingDelivery] = useState<DeliveryPerson[]>([]);
-  const [recentUsers, setRecentUsers] = useState<User[]>([]);
+  const [recentCustomers, setRecentCustomers] = useState<Customer[]>([]);
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-  const [audience, setAudience] = useState<'users' | 'restaurants' | 'delivery'>('users');
+  const [audience, setAudience] = useState<'customers' | 'restaurants' | 'delivery'>('customers');
 
   useEffect(() => {
     async function loadAll() {
@@ -58,11 +55,11 @@ export default function AdminHome() {
         setPendingDelivery((await pdRes.json()) as DeliveryPerson[]);
       }
 
-      // Recent users (just take first 5)
-      const uRes = await fetch(`/api/admin/users`);
-      if (uRes.ok) {
-        const allUsers = (await uRes.json()) as User[];
-        setRecentUsers(allUsers.slice(0, 5));
+      // Recent customers (just take first 5)
+      const cRes = await fetch(`/api/admin/customers`);
+      if (cRes.ok) {
+        const all = (await cRes.json()) as Customer[];
+        setRecentCustomers(all.slice(0, 5));
       }
     }
     loadAll();
@@ -70,9 +67,9 @@ export default function AdminHome() {
 
   async function handleNotify(e: FormEvent) {
     e.preventDefault();
-    let url = `/api/admin/notify/all-users`;
+    let url = `/api/admin/notify/all-customers`;
     if (audience === 'restaurants') url = `/api/admin/notify/all-restaurants`;
-    if (audience === 'delivery')    url = `/api/admin/notify/all-delivery-personnel`;
+    else if (audience === 'delivery') url = `/api/admin/notify/all-delivery`;
 
     await fetch(url, {
       method: 'POST',
@@ -86,7 +83,7 @@ export default function AdminHome() {
   }
 
   function handleAudienceChange(e: ChangeEvent<HTMLSelectElement>) {
-    setAudience(e.target.value as 'users' | 'restaurants' | 'delivery');
+    setAudience(e.target.value as 'customers' | 'restaurants' | 'delivery');
   }
 
   return (
@@ -94,7 +91,7 @@ export default function AdminHome() {
       {/* Metrics Cards */}
       {metrics && (
         <div style={{ display: 'flex', gap: 16, marginBottom: 32 }}>
-          <Card label="Users" value={metrics.totalUsers} />
+          <Card label="Customers" value={metrics.totalUsers} />
           <Card label="Restaurants" value={metrics.totalRestaurants} />
           <Card label="Orders" value={metrics.totalOrders} />
           <Card label="Revenue" value={`$${metrics.totalRevenue}`} />
@@ -112,8 +109,8 @@ export default function AdminHome() {
           items={pendingDelivery.map(d => d.driver_license_no)}
         />
         <List
-          title="Recent Users"
-          items={recentUsers.map(u => u.full_name)}
+          title="Recent Customers"
+          items={recentCustomers.map(c => c.full_name)}
         />
       </div>
 
@@ -140,7 +137,7 @@ export default function AdminHome() {
           onChange={handleAudienceChange}
           style={{ display: 'block', marginBottom: 8 }}
         >
-          <option value="users">All Users</option>
+          <option value="customers">All Customers</option>
           <option value="restaurants">All Restaurants</option>
           <option value="delivery">All Delivery Personnel</option>
         </select>

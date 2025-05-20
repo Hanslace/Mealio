@@ -10,7 +10,7 @@ interface DeliveryPerson {
   driver_license_no: string;
   vehicle_type: string;
   is_verified: boolean;
-  status: 'active' | 'not_active' | 'suspended';
+  status: 'online' | 'offline' | 'suspended';
 }
 
 export default function AdminDelivery() {
@@ -47,7 +47,7 @@ export default function AdminDelivery() {
                         : d.is_verified,
                 status:
                 action === 'suspend'   ? 'suspended'
-                : action === 'unsuspend' ? 'active'
+                : action === 'unsuspend' ? 'offline'
                 : d.status,
             }
             : d
@@ -91,7 +91,7 @@ export default function AdminDelivery() {
                     </button>
                     </>
                 )}
-                {d.status === 'active' && (
+                {(d.status === 'offline' || d.status === 'online')  && (
                     <button onClick={() => sendAction(d.delivery_personnel_id, 'suspend')}>
                     Suspend
                     </button>

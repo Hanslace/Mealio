@@ -5,17 +5,13 @@ const adminController = require('../controllers/admin.controller');
 
 // All admin routes require user to be admin
 router.use(authMiddleware(), roleMiddleware(['admin']));
-
-router.get('/me', adminController.me);
-
-
 // Dashboard metrics
 router.get('/dashboard', adminController.getDashboardMetrics);
 
 // Users
-router.get('/users', adminController.listUsers);
-router.put('/users/:userId/ban', adminController.banUser);
-router.put('/users/:userId/reactivate', adminController.reactivateUser);
+router.get('/customers', adminController.listUsers);
+router.put('/customers/:userId/ban', adminController.banUser);
+router.put('/customers/:userId/reactivate', adminController.reactivateUser);
 
 // Restaurants
 router.get('/restaurants', adminController.listRestaurants);
@@ -34,7 +30,7 @@ router.put('/delivery-personnel/:id/unsuspend',   adminController.unsuspendDeliv
 
 
 // Broadcast notifications
-router.post('/notify/all-users',               adminController.notifyAllUsers);
+router.post('/notify/all-customers',               adminController.notifyAllUsers);
 router.post('/notify/all-restaurants',         adminController.notifyAllRestaurants);
 router.post('/notify/all-delivery-personnel',  adminController.notifyAllDelivery);
 

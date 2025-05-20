@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext, ReactNode } from
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
-const SERVER_URL = 'https://mealio-production.up.railway.app';
+const SERVER_URL = 'https://mealio-production.up.railway.app/api';
 
 interface SocketContextType {
   socket: Socket | null;

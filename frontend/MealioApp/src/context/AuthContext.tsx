@@ -94,17 +94,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoggedIn(true);
   };
 
-  const register = async (
-    full_name: string,
-    email:     string,
-    password:  string,
-    role:      UserRole,
-    push_token:string
-  ) => {
-    // register endpoint
-    await axiosInstance.post('/auth/register', { full_name, email, password, role, push_token });
-    // then log in to get JWT and populate context
+const register = async (
+  full_name: string,
+  email:     string,
+  password:  string,
+  role:      UserRole,
+  push_token:string,
+  extra: {
+    phone?: string;
+    restaurant?: {
+      restaurant_name: string;
+      license_number:  string;
+      cuisine_type:    string;
+      opening_time:    string;   // "HH:MM"
+      closing_time:    string;   // "HH:MM"
+      address_line1:   string;
+      city:            string;
+      country:         string;
+    };
+    delivery?: {
+      driver_license_no:    string;
+      license_expiry_date:  string; // "YYYY-MM-DD"
+      vehicle_type:         string;
+      vehicle_plate_number: string;
+      iban:                 string;
+    };
+  } = {}
+) => {
+  // ---------- build payload ----------
+  const payload: Record<string, any> = {
+    full_name,
+    email,
+    password,
+    role,
+    push_token,
+    phone: extra.phone,
   };
+
+  if (role === 'restaurant_owner' && extra.restaurant) {
+    payload.restaurant = extra.restaurant;
+  }
+  if (role === 'delivery_personnel' && extra.delivery) {
+    payload.delivery = extra.delivery;
+  }
+
+  // ---------- register ----------
+  await axiosInstance.post('/auth/register', payload);
+};
 
   const logout = async () => {
     try {
