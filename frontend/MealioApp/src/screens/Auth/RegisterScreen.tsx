@@ -1,14 +1,23 @@
 // src/screens/auth/RegisterScreen.tsx
 import React, { useState, useEffect } from 'react';
 import {
-  SafeAreaView, View, Text, TextInput, TouchableOpacity,
-  StyleSheet, StatusBar, ScrollView, KeyboardAvoidingView,
-  Platform, Image,
+  SafeAreaView,
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet,
+  StatusBar,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Image,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { useAuth, UserRole } from '../../context/AuthContext';
@@ -29,6 +38,10 @@ const ROLES: { key: UserRole; icon: IoniconName; label: string }[] = [
   { key: 'delivery_personnel', icon: 'bicycle-outline',    label: 'Delivery'   },
   { key: 'restaurant_owner',   icon: 'restaurant-outline', label: 'Restaurant' },
 ];
+
+// ─────────────────────────  HELPERS  ────────────────────────────
+const fmtDate = (d: Date) => d.toISOString().slice(0, 10); // YYYY-MM-DD
+const fmtTime = (d: Date) => d.toTimeString().slice(0, 5); // HH:MM
 
 // ─────────────────────────  COMPONENT  ──────────────────────────
 export default function RegisterScreen() {
@@ -54,7 +67,7 @@ export default function RegisterScreen() {
 
   // ── DELIVERY PERSONNEL EXTRAS ─────────────────────────────────
   const [driverLicense,      setDriverLicense]      = useState('');
-  const [licenseExpiry,      setLicenseExpiry]      = useState(''); // yyyy-mm-dd
+  const [licenseExpiry,      setLicenseExpiry]      = useState('');
   const [vehicleType,        setVehicleType]        = useState('');
   const [vehiclePlate,       setVehiclePlate]       = useState('');
   const [iban,               setIban]               = useState('');
@@ -63,6 +76,11 @@ export default function RegisterScreen() {
   const [pushToken, setPushToken] = useState('');
   const [loading,   setLoading]   = useState(false);
   const [errorMsg,  setErrorMsg]  = useState<string | null>(null);
+
+  // picker visibility
+  const [showOpen,   setShowOpen]   = useState(false);
+  const [showClose,  setShowClose]  = useState(false);
+  const [showExpiry, setShowExpiry] = useState(false);
 
   // ── EXPO PUSH TOKEN ───────────────────────────────────────────
   useEffect(() => {
@@ -81,46 +99,74 @@ export default function RegisterScreen() {
     })();
   }, []);
 
-  // ─────────────────────────  SIGN-UP  ──────────────────────────
   const onSignUp = async () => {
-    setErrorMsg(null);
+  setErrorMsg(null);
 
-    // -- COMMON FIELDS
-    const baseOK =
-      fullName.trim() !== '' &&
-      email.trim()    !== '' &&
-      phone.trim()    !== '' &&
-      password        !== '';
+  // -- COMMON FIELDS
+  const baseOK =
+    fullName.trim() !== '' &&
+    email.trim()    !== '' &&
+    phone.trim()    !== '' &&
+    password        !== '';
 
-    // -- ROLE-SPECIFIC
-    let extraOK = true;
-    if (role === 'restaurant_owner') {
-      extraOK =
-        restaurantName.trim() !== '' &&
-        licenseNumber.trim()  !== '' &&
-        cuisineType.trim()    !== '' &&
-        openingTime.trim()    !== '' &&
-        closingTime.trim()    !== '' &&
-        addrLine1.trim()      !== '' &&
-        city.trim()           !== '' &&
-        country.trim()        !== '';
-    } else if (role === 'delivery_personnel') {
-      extraOK =
-        driverLicense.trim() !== '' &&
-        licenseExpiry.trim() !== '' &&
-        vehicleType.trim()   !== '' &&
-        vehiclePlate.trim()  !== '' &&
-        iban.trim()          !== '';
+ 
+
+  // -- ROLE-SPECIFIC
+  let restaurantOK = true;
+  let deliveryOK   = true;
+
+  if (role === 'restaurant_owner') {
+    restaurantOK =
+      restaurantName.trim() !== '' &&
+      licenseNumber.trim()  !== '' &&
+      cuisineType.trim()    !== '' &&
+      addrLine1.trim()      !== '' &&
+      city.trim()           !== '' &&
+      country.trim()        !== '' &&
+      openingTime.trim()    !== '' &&
+      closingTime.trim()    !== '' &&
+      openingTime < closingTime;
+
+    
+  }
+
+  if (role === 'delivery_personnel') {
+    deliveryOK =
+      driverLicense.trim() !== '' &&
+      vehicleType.trim()   !== '' &&
+      vehiclePlate.trim()  !== '' &&
+      iban.trim()          !== '' &&
+      licenseExpiry.trim() !== '' &&
+      // guard against invalid date strings:
+      !isNaN(new Date(licenseExpiry).valueOf()) &&
+      new Date(licenseExpiry) > new Date();
+
+    
+  }
+
+  const extraOK = role === 'restaurant_owner'
+    ? restaurantOK
+    : role === 'delivery_personnel'
+      ? deliveryOK
+      : true;
+
+  // final debug
+
+  if (!baseOK || !extraOK) {
+    // give more context when debugging:
+    if (!baseOK) {
+      setErrorMsg('Please fill all the common fields.');
+    } else if (!restaurantOK) {
+      setErrorMsg('Please complete all restaurant fields and ensure opening < closing time.');
+    } else {
+      setErrorMsg('Please complete all delivery fields and pick a future expiry date.');
     }
-
-    if (!baseOK || !extraOK) {
-      setErrorMsg('Please fill all required fields.');
-      return;
-    }
+    setLoading(false);
+    return;
+  }
 
     setLoading(true);
     try {
-      // Backend API expects one flat payload, so bundle everything.
       await register(
         fullName.trim(),
         email.trim(),
@@ -129,7 +175,6 @@ export default function RegisterScreen() {
         pushToken,
         {
           phone: phone.trim(),
-          // extra blocks
           restaurant: {
             restaurant_name: restaurantName.trim(),
             license_number:  licenseNumber.trim(),
@@ -257,12 +302,39 @@ export default function RegisterScreen() {
               <TextInput style={styles.input} placeholder="Cuisine Type"
                 placeholderTextColor="#888" value={cuisineType}
                 onChangeText={setCuisineType} />
-              <TextInput style={styles.input} placeholder="Opening Time (HH:MM)"
-                placeholderTextColor="#888" value={openingTime}
-                onChangeText={setOpeningTime} />
-              <TextInput style={styles.input} placeholder="Closing Time (HH:MM)"
-                placeholderTextColor="#888" value={closingTime}
-                onChangeText={setClosingTime} />
+
+              {/* Opening Time */}
+              <TouchableOpacity onPress={() => setShowOpen(true)} style={styles.input}>
+                <Text style={{ color: '#000' }}>{openingTime}</Text>
+              </TouchableOpacity>
+              {showOpen && (
+                <DateTimePicker
+                  value={new Date(`1970-01-01T${openingTime}:00`)}
+                  mode="time"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(_, time) => {
+                    setShowOpen(false);
+                    if (time) setOpeningTime(fmtTime(time));
+                  }}
+                />
+              )}
+
+              {/* Closing Time */}
+              <TouchableOpacity onPress={() => setShowClose(true)} style={styles.input}>
+                <Text style={{ color: '#000' }}>{closingTime}</Text>
+              </TouchableOpacity>
+              {showClose && (
+                <DateTimePicker
+                  value={new Date(`1970-01-01T${closingTime}:00`)}
+                  mode="time"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(_, time) => {
+                    setShowClose(false);
+                    if (time) setClosingTime(fmtTime(time));
+                  }}
+                />
+              )}
+
               <TextInput style={styles.input} placeholder="Address Line 1"
                 placeholderTextColor="#888" value={addrLine1}
                 onChangeText={setAddrLine1} />
@@ -281,9 +353,25 @@ export default function RegisterScreen() {
               <TextInput style={styles.input} placeholder="Driver License No."
                 placeholderTextColor="#888" value={driverLicense}
                 onChangeText={setDriverLicense} />
-              <TextInput style={styles.input} placeholder="License Expiry (YYYY-MM-DD)"
-                placeholderTextColor="#888" value={licenseExpiry}
-                onChangeText={setLicenseExpiry} />
+
+              {/* License Expiry */}
+              <TouchableOpacity onPress={() => setShowExpiry(true)} style={styles.input}>
+                <Text style={{ color: licenseExpiry ? '#000' : '#888' }}>
+                  {licenseExpiry || 'License Expiry (YYYY-MM-DD)'}
+                </Text>
+              </TouchableOpacity>
+              {showExpiry && (
+                <DateTimePicker
+                  value={licenseExpiry ? new Date(licenseExpiry) : new Date()}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(_, date) => {
+                    setShowExpiry(false);
+                    if (date) setLicenseExpiry(fmtDate(date));
+                  }}
+                />
+              )}
+
               <TextInput style={styles.input} placeholder="Vehicle Type"
                 placeholderTextColor="#888" value={vehicleType}
                 onChangeText={setVehicleType} />

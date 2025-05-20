@@ -15,6 +15,27 @@ interface JWTPayload {
   iat:     number;
 }
 
+export interface RegisterExtra {
+  phone?: string;
+  restaurant?: {
+    restaurant_name: string;
+    license_number:  string;
+    cuisine_type:    string;
+    opening_time:    string;
+    closing_time:    string;
+    address_line1:   string;
+    city:            string;
+    country:         string;
+  };
+  delivery?: {
+    driver_license_no:    string;
+    license_expiry_date:  string;
+    vehicle_type:         string;
+    vehicle_plate_number: string;
+    iban:                 string;
+  };
+}
+
 interface AuthContextType {
   userId:     number | null;
   userRole:   UserRole | null;
@@ -22,7 +43,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   isLoading:  boolean;
   login:      (email: string, password: string, push_token: string) => Promise<void>;
-  register:   (full_name: string, email: string, password: string, role: UserRole, push_token: string) => Promise<void>;
+  register:   (full_name: string, email: string, password: string, role: UserRole, push_token: string,extra?:    RegisterExtra) => Promise<void>;
   logout:     () => Promise<void>;
 }
 

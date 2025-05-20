@@ -26,10 +26,6 @@ module.exports = (sequelize, DataTypes) => {
       zip_code: DataTypes.STRING(20),
       latitude: DataTypes.DECIMAL(9,6),
       longitude: DataTypes.DECIMAL(9,6),
-      is_default: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-      },
       created_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
