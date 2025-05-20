@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AssignmentsScreen from '../../screens/delivery/AssignmentsScreen';
 import AssignmentDetailsScreen from '../../screens/delivery/AssignmentDetailsScreen';
 import LiveMapScreen from '../../screens/delivery/LiveMapScreen';
-import EarningsHistoryScreen from '../../screens/delivery/EarningsHistoryScreen';
+// import EarningsHistoryScreen from '../../screens/delivery/EarningsHistoryScreen';
 import ChatListScreen from '../../screens/delivery/ChatListScreen';
 import ChatRoomScreen from '../../screens/delivery/ChatRoomScreen';
 import DeliveryProfileScreen from '../../screens/delivery/ProfileScreen';
@@ -48,11 +48,11 @@ export default function DeliveryStackNavigator() {
         component={LiveMapScreen}
         options={{ title: 'Live Map' }}
       />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="EarningsHistory"
         component={EarningsHistoryScreen}
         options={{ title: 'Earnings & History' }}
-      />
+      /> */}
       <Stack.Screen
         name="ChatList"
         component={ChatListScreen}

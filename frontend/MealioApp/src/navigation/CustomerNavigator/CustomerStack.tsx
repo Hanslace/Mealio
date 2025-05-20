@@ -12,7 +12,7 @@ import PaymentResultScreen from '../../screens/customer/PaymentResultScreen';
 import OrderHistoryScreen from '../../screens/customer/OrderHistoryScreen';
 import OrderDetailsScreen from '../../screens/customer/OrderDetailsScreen';
 import OrderSupportChatScreen from '../../screens/customer/OrderSupportChatScreen';
-import DeliveryTrackingScreen from '../../screens/customer/DeliveryTrackingScreen.tsx';
+import DeliveryTrackingScreen from '../../screens/customer/DeliveryTrackingScreen';
 
 import CustomerProfileScreen from '../../screens/customer/ProfileScreen';
 import NotificationsScreen from '../../screens/customer/NotificationsScreen';

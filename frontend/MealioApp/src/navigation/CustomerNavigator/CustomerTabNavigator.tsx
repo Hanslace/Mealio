@@ -11,7 +11,7 @@ import {
 
 export type CustomerTabParamList = {
   Home: undefined;
-  Search: undefined;
+  Search: { query:string};
   Cart: undefined;
   Orders: undefined;
   Profile: undefined;
@@ -21,7 +21,7 @@ const Tab = createBottomTabNavigator<CustomerTabParamList>();
 
 export default function CustomerTabNavigator() {
   return (
-    <Tab.Navigator initialRouteName="Home">
+    <Tab.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Home" component={HomeStack} />
       <Tab.Screen name="Search" component={SearchStack} />
       <Tab.Screen name="Cart" component={CartStack} />

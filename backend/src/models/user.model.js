@@ -11,8 +11,6 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 'customer'
     },
     is_verified: { type: DataTypes.BOOLEAN, defaultValue: false },
-    // is_active moved to Customer model for ban/unban specific to customers
-    // is_deleted stays here for generic soft delete
     is_deleted: { type: DataTypes.BOOLEAN, defaultValue: false },
     last_seen:   { type: DataTypes.DATE, allowNull: true },
     password_reset_token:   { type: DataTypes.STRING, allowNull: true },
