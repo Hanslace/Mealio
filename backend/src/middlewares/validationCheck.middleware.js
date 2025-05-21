@@ -8,5 +8,5 @@ module.exports = (req, res, next) => {
       errors: extractedErrors
     });
   }
-  next();
+  next() ;
 };
