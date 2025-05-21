@@ -45,11 +45,7 @@ exports.searchRestaurants = async (req, res, next) => {
       },
       include: [{
         model: Address,
-        as: 'address',
-        attributes: [
-          ['address_line1'], 
-          'city'
-        ]
+        as: 'address'
       }],
       order: [['restaurant_name','ASC']],
       limit:  parseInt(limit, 10),

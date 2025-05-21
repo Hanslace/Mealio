@@ -50,6 +50,10 @@ module.exports = (sequelize, DataTypes) => {
     Order.belongsTo(models.Coupon,      { foreignKey: 'coupon_id' });
     Order.hasMany(models.OrderItem,     { foreignKey: 'order_id', onDelete: 'CASCADE' });
     Order.hasOne(models.Payment, { foreignKey: 'order_id', onDelete: 'CASCADE' });
+    User.hasOne(models.Customer, {
+    foreignKey: 'user_id',
+    as: 'customer'
+  });
     Order.hasOne(models.DeliveryAssignment, {
       foreignKey: 'order_id',
       onDelete: 'CASCADE',

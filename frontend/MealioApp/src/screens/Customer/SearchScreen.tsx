@@ -1,5 +1,5 @@
 // src/screens/customer/SearchScreen.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,18 @@ import {
   Pressable,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
-import { StackNavigationProp }   from '@react-navigation/stack';
+import {
+  useNavigation,
+  CompositeNavigationProp,
+  useRoute,
+  RouteProp,
+} from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 
 import type { CustomerStackParamList } from '../../navigation/CustomerNavigator/CustomerStack';
-import type { CustomerTabParamList }   from '../../navigation/CustomerNavigator/CustomerTabNavigator';
+import type { CustomerTabParamList } from '../../navigation/CustomerNavigator/CustomerTabNavigator';
 import { searchItems, searchRestaurants } from '../../api/search.api';
 
 // Composite nav prop to allow both Stack and Tab navigation
@@ -27,32 +32,39 @@ type NavProp = CompositeNavigationProp<
   BottomTabNavigationProp<CustomerTabParamList>
 >;
 
+// route-prop type for SearchMain
+type SearchRouteProp = RouteProp<CustomerStackParamList, 'SearchMain'>;
+
 export default function SearchScreen() {
   const navigation = useNavigation<NavProp>();
-  const [query, setQuery] = useState('');
+  const route = useRoute<SearchRouteProp>();
+
+  // guard against undefined params
+  const initialQuery = route.params?.query ?? '';
+  const [query, setQuery] = useState(initialQuery);
   const [index, setIndex] = useState(0);
 
   // Modal state & selected item
   const [showItemModal, setShowItemModal] = useState(false);
-  const [selectedItem, setSelectedItem]   = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
   // define TabView routes
   const [routes] = useState([
-    { key: 'items',       title: 'Items' },
-    { key: 'restaurants', title: 'Restaurants' }
+    { key: 'items', title: 'Items' },
+    { key: 'restaurants', title: 'Restaurants' },
   ]);
 
   // ITEMS state
-  const [itemsData, setItemsData]       = useState<any[]>([]);
-  const [itemsCount, setItemsCount]     = useState(0);
-  const [itemsPage, setItemsPage]       = useState(1);
+  const [itemsData, setItemsData] = useState<any[]>([]);
+  const [itemsCount, setItemsCount] = useState(0);
+  const [itemsPage, setItemsPage] = useState(1);
   const [itemsLoading, setItemsLoading] = useState(false);
 
   // RESTAURANTS state
-  const [restData, setRestData]         = useState<any[]>([]);
-  const [restCount, setRestCount]       = useState(0);
-  const [restPage, setRestPage]         = useState(1);
-  const [restLoading, setRestLoading]   = useState(false);
+  const [restData, setRestData] = useState<any[]>([]);
+  const [restCount, setRestCount] = useState(0);
+  const [restPage, setRestPage] = useState(1);
+  const [restLoading, setRestLoading] = useState(false);
 
   const limit = 10;
 
@@ -83,11 +95,20 @@ export default function SearchScreen() {
   };
 
   const onSearchSubmit = () => {
-    setItemsData([]); setItemsPage(1);
-    setRestData([]);  setRestPage(1);
+    setItemsData([]);
+    setItemsPage(1);
+    setRestData([]);
+    setRestPage(1);
     doSearchItems(1);
     doSearchRestaurants(1);
   };
+
+  // run initial search once if we got a query
+  useEffect(() => {
+    if (initialQuery.trim()) {
+      onSearchSubmit();
+    }
+  }, []);
 
   const loadMoreItems = () => {
     if (!itemsLoading && itemsData.length < itemsCount) {
@@ -119,7 +140,7 @@ export default function SearchScreen() {
       style={styles.row}
       onPress={() =>
         navigation.navigate('RestaurantDetails', {
-          restaurantId: item.restaurant_id
+          restaurantId: item.restaurant_id,
         })
       }
     >
@@ -131,7 +152,6 @@ export default function SearchScreen() {
     </TouchableOpacity>
   );
 
-  // Components for empty and loading states
   const EmptyComponent = () => <Text style={styles.empty}>No matches.</Text>;
   const LoadingComponent = () => <ActivityIndicator style={{ margin: 20 }} />;
 
@@ -202,7 +222,6 @@ export default function SearchScreen() {
       <ItemOverlay />
       <View style={{ flex: 1 }}>
         <TextInput
-          autoFocus
           style={styles.search}
           placeholder="Search…"
           returnKeyType="search"
@@ -235,12 +254,12 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#ccc'
+    borderColor: '#ccc',
   },
   row: {
     padding: 12,
     borderBottomWidth: 1,
-    borderColor: '#eee'
+    borderColor: '#eee',
   },
   title: { fontSize: 16, fontWeight: '500' },
   desc: { color: '#555', marginVertical: 4 },
@@ -255,44 +274,44 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   modalContent: {
     width: '80%',
     backgroundColor: '#fff',
     borderRadius: 8,
-    padding: 16
+    padding: 16,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
-    marginBottom: 8
+    marginBottom: 8,
   },
   modalDesc: {
     marginBottom: 12,
-    color: '#555'
+    color: '#555',
   },
   modalPrice: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12
+    marginBottom: 12,
   },
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 16
+    marginBottom: 16,
   },
   modalButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderRadius: 4
+    borderRadius: 4,
   },
   closeButton: {
     alignSelf: 'center',
-    marginTop: 8
+    marginTop: 8,
   },
   closeText: {
-    color: '#007aff'
-  }
+    color: '#007aff',
+  },
 });

@@ -9,10 +9,12 @@ const {
 const authMiddleware  = require('../middlewares/auth.middleware');
 const roleMiddleware  = require('../middlewares/role.middleware');
 
-router.use(authMiddleware(), roleMiddleware(['customer']));
+// router.use(authMiddleware(), roleMiddleware(['customer']));
 
 
 router.get('/items',       searchItems);
-router.get('/restaurants', searchRestaurants);
-
+router.get('/restaurants', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+}, searchRestaurants);
 module.exports = router;

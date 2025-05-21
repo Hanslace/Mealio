@@ -24,7 +24,7 @@ import PaymentMethodsScreen from '../../screens/customer/PaymentMethodsScreen';
 export type CustomerStackParamList = {
   HomeMain: undefined;
   RestaurantDetails: { restaurantId: number };
-  SearchMain: undefined;
+  SearchMain: { query: string };  
 
   CartMain: undefined;
   Checkout: undefined;

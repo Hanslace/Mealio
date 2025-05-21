@@ -1,17 +1,22 @@
-import axios from 'axios';
-import { Platform } from 'react-native';
+// src/api/search.api.ts
+import axiosInstance from './axiosInstance';
 
-const HOST = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
-const BASE = `http://${HOST}:3001/api/search`;
+const BASE = '/search';
+
+export interface SearchResult<T> {
+  count: number;
+  rows: T[];
+}
 
 export const searchItems = async (
   q: string,
   page = 1,
   limit = 10
-): Promise<{ count: number; rows: any[] }> => {
-  const { data } = await axios.get(`${BASE}/items`, {
-    params: { q, page, limit }
-  });
+): Promise<SearchResult<any>> => {
+  const { data } = await axiosInstance.get<SearchResult<any>>(
+    `${BASE}/items`,
+    { params: { q, page, limit } }
+  );
   return data;
 };
 
@@ -19,9 +24,10 @@ export const searchRestaurants = async (
   q: string,
   page = 1,
   limit = 10
-): Promise<{ count: number; rows: any[] }> => {
-  const { data } = await axios.get(`${BASE}/restaurants`, {
-    params: { q, page, limit }
-  });
+): Promise<SearchResult<any>> => {
+  const { data } = await axiosInstance.get<SearchResult<any>>(
+    `${BASE}/restaurants`,
+    { params: { q, page, limit } }
+  );
   return data;
 };
