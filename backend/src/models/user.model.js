@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
 
   User.associate = (models) => {
     User.hasMany(models.Address,    { foreignKey: 'user_id', onDelete: 'CASCADE' });
-    User.hasMany(models.Restaurant, { foreignKey: 'owner_id' });
+    User.hasOne(models.Restaurant, { foreignKey: 'owner_id' });
     User.hasOne(models.DeliveryPersonnel, { foreignKey: 'user_id' });
     User.hasMany(models.Order,      { foreignKey: 'user_id' });
     User.hasMany(models.Review,     { foreignKey: 'user_id' });
@@ -37,6 +37,10 @@ module.exports = (sequelize, DataTypes) => {
     User.belongsToMany(models.MenuItem, { through: 'LikedMenuItems', foreignKey: 'user_id', as: 'likedItems' });
     User.hasMany(models.MenuItemLike, { foreignKey: 'user_id' });
     User.hasMany(models.PushToken,    { foreignKey: 'user_id', as: 'pushTokens' });
+    User.hasOne(models.Customer, {
+    foreignKey: 'user_id',
+    as: 'customer'
+    });
   };
 
   return User;

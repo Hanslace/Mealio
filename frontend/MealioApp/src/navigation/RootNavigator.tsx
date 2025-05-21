@@ -24,7 +24,8 @@ export default function RootNavigator() {
   if (!isLoggedIn)                       initial = 'Auth';
   else if (userRole === 'customer')      initial = 'Customer';
   else if (userRole === 'restaurant_owner') initial = 'Owner';
-  else                                    initial = 'Delivery';
+  else if (userRole === 'delivery_personnel')  initial = 'Delivery';
+  else initial = 'Customer';
 
   return (
     <Stack.Navigator
