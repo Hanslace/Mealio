@@ -35,7 +35,6 @@ exports.listUsers = async (req, res, next) => {
       attributes: { exclude: ['password_hash'] },
       include: [{
         model: Customer,
-        as: 'Customer',
         attributes: ['is_active']
       }]
     });

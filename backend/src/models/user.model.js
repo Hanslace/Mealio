@@ -37,10 +37,7 @@ module.exports = (sequelize, DataTypes) => {
     User.belongsToMany(models.MenuItem, { through: 'LikedMenuItems', foreignKey: 'user_id', as: 'likedItems' });
     User.hasMany(models.MenuItemLike, { foreignKey: 'user_id' });
     User.hasMany(models.PushToken,    { foreignKey: 'user_id', as: 'pushTokens' });
-    User.hasOne(models.Customer, {
-    foreignKey: 'user_id',
-    as: 'customer'
-    });
+    User.hasOne(models.Customer, {    foreignKey: 'user_id'    });
   };
 
   return User;
