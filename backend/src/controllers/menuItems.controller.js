@@ -11,12 +11,12 @@ exports.getPopularMenuItems = async (req, res, next) => {
     }
 
     const distance = literal(`
-      6371 * acos(
-        cos(radians(${lat})) * cos(radians("address"."latitude")) *
-        cos(radians("address"."longitude") - radians(${lng})) +
-        sin(radians(${lat})) * sin(radians("address"."latitude"))
-      )
-    `);
+  6371 * acos(
+    cos(radians(${lat})) * cos(radians("Restaurant->address"."latitude")) *
+    cos(radians("Restaurant->address"."longitude") - radians(${lng})) +
+    sin(radians(${lat})) * sin(radians("Restaurant->address"."latitude"))
+  )
+`);
 
     const items = await MenuItem.findAll({
       include: [{

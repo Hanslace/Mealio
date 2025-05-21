@@ -22,7 +22,7 @@ exports.getTopRestaurants = async (req, res, next) => {
       include: [{
         model: Address,
         as: 'address',
-        attributes: ['latitude', 'longitude', 'street', 'city']
+        attributes: ['latitude', 'longitude', 'address_line1', 'city']
       }],
       where: { status: 'open', is_deleted: false },
       attributes: { include: [[distance, 'distance_km']] },
