@@ -4,6 +4,7 @@ const router = express.Router();
 const authMiddleware = require('../middlewares/auth.middleware');
 const notificationController = require('../controllers/notification.controller');
 
+
 // All routes below require user to be logged in
 router.use(authMiddleware());
 

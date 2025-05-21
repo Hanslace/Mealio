@@ -1,6 +1,7 @@
 const { Restaurant, Address, User } = require('../models');
 const { Op, literal } = require('sequelize');
 
+
 exports.getTopRestaurants = async (req, res, next) => {
   try {
     const { lat, lng, limit = 10, page = 1 } = req.query;

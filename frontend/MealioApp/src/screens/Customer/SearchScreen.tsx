@@ -2,227 +2,297 @@
 import React, { useState } from 'react';
 import {
   View,
-  TextInput,
-  StyleSheet,
-  FlatList,
   Text,
+  StyleSheet,
+  TextInput,
   TouchableOpacity,
-  ActivityIndicator,
+  FlatList,
   Dimensions,
-  Image
+  Modal,
+  Pressable,
+  ActivityIndicator,
 } from 'react-native';
-import { StackScreenProps } from '@react-navigation/stack';
-import { useNavigation } from '@react-navigation/native';
-import axiosInstance from '../../api/axiosInstance';
-import { Ionicons } from '@expo/vector-icons';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
+import { StackNavigationProp }   from '@react-navigation/stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 
 import type { CustomerStackParamList } from '../../navigation/CustomerNavigator/CustomerStack';
+import type { CustomerTabParamList }   from '../../navigation/CustomerNavigator/CustomerTabNavigator';
+import { searchItems, searchRestaurants } from '../../api/search.api';
 
-type Props = StackScreenProps<CustomerStackParamList, 'SearchMain'>;
-type NavProp = StackNavigationProp<CustomerStackParamList, 'SearchMain'>;
+// Composite nav prop to allow both Stack and Tab navigation
+type NavProp = CompositeNavigationProp<
+  StackNavigationProp<CustomerStackParamList, 'SearchMain'>,
+  BottomTabNavigationProp<CustomerTabParamList>
+>;
 
-interface MenuItem {
-  item_id: number;
-  restaurant_id: number;
-  item_name: string;
-  price: string;
-  image_url?: string | null;
-}
+export default function SearchScreen() {
+  const navigation = useNavigation<NavProp>();
+  const [query, setQuery] = useState('');
+  const [index, setIndex] = useState(0);
 
-interface Restaurant {
-  restaurant_id: number;
-  restaurant_name: string;
-  rating: string;
-  logo_url?: string | null;
-}
+  // Modal state & selected item
+  const [showItemModal, setShowItemModal] = useState(false);
+  const [selectedItem, setSelectedItem]   = useState<any>(null);
 
-export default function SearchScreen({}: Props) {
-  const nav = useNavigation<NavProp>();
+  // define TabView routes
+  const [routes] = useState([
+    { key: 'items',       title: 'Items' },
+    { key: 'restaurants', title: 'Restaurants' }
+  ]);
 
-  const [query, setQuery] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'Items' | 'Restaurants'>('Items');
-  const [items, setItems] = useState<MenuItem[]>([]);
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [submitted, setSubmitted] = useState<boolean>(false);
+  // ITEMS state
+  const [itemsData, setItemsData]       = useState<any[]>([]);
+  const [itemsCount, setItemsCount]     = useState(0);
+  const [itemsPage, setItemsPage]       = useState(1);
+  const [itemsLoading, setItemsLoading] = useState(false);
 
-  const fetchResults = async () => {
+  // RESTAURANTS state
+  const [restData, setRestData]         = useState<any[]>([]);
+  const [restCount, setRestCount]       = useState(0);
+  const [restPage, setRestPage]         = useState(1);
+  const [restLoading, setRestLoading]   = useState(false);
+
+  const limit = 10;
+
+  const doSearchItems = async (page = 1) => {
     if (!query.trim()) return;
-    setLoading(true);
+    setItemsLoading(true);
     try {
-      const res = await axiosInstance.get<{
-        menuItems: MenuItem[];
-        restaurants: Restaurant[];
-      }>(`/search?q=${encodeURIComponent(query)}`);
-      setItems(res.data.menuItems);
-      setRestaurants(res.data.restaurants);
-      setSubmitted(true);
-    } catch (err) {
-      console.error('Search error:', err);
+      const { count, rows } = await searchItems(query, page, limit);
+      setItemsPage(page);
+      setItemsCount(count);
+      setItemsData(page === 1 ? rows : [...itemsData, ...rows]);
     } finally {
-      setLoading(false);
+      setItemsLoading(false);
     }
   };
 
-  const openRestaurant = (id: number) =>
-    nav.navigate('RestaurantDetails', { restaurantId: id });
+  const doSearchRestaurants = async (page = 1) => {
+    if (!query.trim()) return;
+    setRestLoading(true);
+    try {
+      const { count, rows } = await searchRestaurants(query, page, limit);
+      setRestPage(page);
+      setRestCount(count);
+      setRestData(page === 1 ? rows : [...restData, ...rows]);
+    } finally {
+      setRestLoading(false);
+    }
+  };
+
+  const onSearchSubmit = () => {
+    setItemsData([]); setItemsPage(1);
+    setRestData([]);  setRestPage(1);
+    doSearchItems(1);
+    doSearchRestaurants(1);
+  };
+
+  const loadMoreItems = () => {
+    if (!itemsLoading && itemsData.length < itemsCount) {
+      doSearchItems(itemsPage + 1);
+    }
+  };
+  const loadMoreRestaurants = () => {
+    if (!restLoading && restData.length < restCount) {
+      doSearchRestaurants(restPage + 1);
+    }
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      style={styles.row}
+      onPress={() => {
+        setSelectedItem(item);
+        setShowItemModal(true);
+      }}
+    >
+      <Text style={styles.title}>{item.item_name}</Text>
+      <Text style={styles.desc}>{item.description}</Text>
+      <Text style={styles.price}>₹{item.price}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderRestaurant = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      style={styles.row}
+      onPress={() =>
+        navigation.navigate('RestaurantDetails', {
+          restaurantId: item.restaurant_id
+        })
+      }
+    >
+      <Text style={styles.title}>{item.restaurant_name}</Text>
+      <Text style={styles.desc}>
+        {item.cuisine_type} • {item.address.city}
+      </Text>
+      <Text style={styles.rating}>⭐ {item.rating}</Text>
+    </TouchableOpacity>
+  );
+
+  // Components for empty and loading states
+  const EmptyComponent = () => <Text style={styles.empty}>No matches.</Text>;
+  const LoadingComponent = () => <ActivityIndicator style={{ margin: 20 }} />;
+
+  const renderScene = SceneMap({
+    items: () => (
+      <FlatList
+        data={itemsData}
+        keyExtractor={i => String(i.item_id)}
+        renderItem={renderItem}
+        onEndReached={loadMoreItems}
+        ListEmptyComponent={itemsLoading ? LoadingComponent : EmptyComponent}
+      />
+    ),
+    restaurants: () => (
+      <FlatList
+        data={restData}
+        keyExtractor={r => String(r.restaurant_id)}
+        renderItem={renderRestaurant}
+        onEndReached={loadMoreRestaurants}
+        ListEmptyComponent={restLoading ? LoadingComponent : EmptyComponent}
+      />
+    ),
+  });
+
+  const ItemOverlay = () => (
+    <Modal
+      visible={showItemModal}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setShowItemModal(false)}
+    >
+      <View style={styles.modalBackdrop}>
+        <View style={styles.modalContent}>
+          {selectedItem && (
+            <>
+              <Text style={styles.modalTitle}>{selectedItem.item_name}</Text>
+              <Text style={styles.modalDesc}>{selectedItem.description}</Text>
+              <Text style={styles.modalPrice}>₹{selectedItem.price}</Text>
+              <View style={styles.modalActions}>
+                <Pressable
+                  style={styles.modalButton}
+                  onPress={() => console.log('Liked', selectedItem.item_id)}
+                >
+                  <Text>❤️ Like</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.modalButton}
+                  onPress={() => console.log('Buy', selectedItem.item_id)}
+                >
+                  <Text>🛒 Buy</Text>
+                </Pressable>
+              </View>
+            </>
+          )}
+          <Pressable
+            style={styles.closeButton}
+            onPress={() => setShowItemModal(false)}
+          >
+            <Text style={styles.closeText}>Close</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
 
   return (
-    <View style={styles.container}>
-      {/* Search input */}
-      <View style={styles.searchRow}>
-        <Ionicons name="search-outline" size={20} color="#777" />
+    <>
+      <ItemOverlay />
+      <View style={{ flex: 1 }}>
         <TextInput
-          style={styles.input}
-          placeholder="Search restaurants or dishes"
           autoFocus
+          style={styles.search}
+          placeholder="Search…"
           returnKeyType="search"
           value={query}
           onChangeText={setQuery}
-          onSubmitEditing={fetchResults}
+          onSubmitEditing={onSearchSubmit}
         />
-      </View>
 
-      {/* Tabs */}
-      <View style={styles.tabBar}>
-        {(['Items', 'Restaurants'] as const).map(tab => (
-          <TouchableOpacity
-            key={tab}
-            style={[styles.tab, activeTab === tab && styles.activeTab]}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === tab && styles.activeTabText,
-              ]}
-            >
-              {tab}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Results / loading / empty */}
-      {loading ? (
-        <ActivityIndicator style={{ marginTop: 24 }} />
-      ) : submitted && activeTab === 'Items' && items.length === 0 ? (
-        <Text style={styles.emptyText}>No matches.</Text>
-      ) : submitted && activeTab === 'Restaurants' && restaurants.length === 0 ? (
-        <Text style={styles.emptyText}>No matches.</Text>
-      ) : activeTab === 'Items' ? (
-        <FlatList<MenuItem>
-          data={items}
-          keyExtractor={it => it.item_id.toString()}
-          contentContainerStyle={{ paddingTop: 16 }}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.itemRow}
-              onPress={() => openRestaurant(item.restaurant_id)}
-            >
-              <Image
-                source={
-                  item.image_url
-                    ? { uri: item.image_url }
-                    : require('../../../assets/food-placeholder.png')
-                }
-                style={styles.itemImg}
-              />
-              <View style={styles.itemInfo}>
-                <Text numberOfLines={1} style={styles.itemName}>
-                  {item.item_name}
-                </Text>
-                <Text style={styles.itemMeta}>Rs {item.price}</Text>
-              </View>
-            </TouchableOpacity>
+        <TabView
+          navigationState={{ index, routes }}
+          renderScene={renderScene}
+          onIndexChange={setIndex}
+          initialLayout={{ width: Dimensions.get('window').width }}
+          renderTabBar={props => (
+            <TabBar
+              {...props}
+              style={styles.tabBar}
+              indicatorStyle={styles.indicator}
+            />
           )}
         />
-      ) : (
-        <FlatList<Restaurant>
-          data={restaurants}
-          keyExtractor={r => r.restaurant_id.toString()}
-          contentContainerStyle={{ paddingTop: 16 }}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.itemRow}
-              onPress={() => openRestaurant(item.restaurant_id)}
-            >
-              <Image
-                source={
-                  item.logo_url
-                    ? { uri: item.logo_url }
-                    : require('../../../assets/restaurant-placeholder.png')
-                }
-                style={styles.itemImg}
-              />
-              <View style={styles.itemInfo}>
-                <Text numberOfLines={1} style={styles.itemName}>
-                  {item.restaurant_name}
-                </Text>
-                <Text style={styles.itemMeta}>⭐ {item.rating}</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-        />
-      )}
-    </View>
+      </View>
+    </>
   );
 }
 
-const { width } = Dimensions.get('window');
-const imgSize = 64;
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingHorizontal: 16 },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#eee',
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginTop: 16,
-    height: 44,
+  search: {
+    margin: 12,
+    padding: 8,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#ccc'
   },
-  input: { flex: 1, marginLeft: 8, fontSize: 16 },
-
-  tabBar: {
-    flexDirection: 'row',
-    marginTop: 24,
+  row: {
+    padding: 12,
     borderBottomWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#eee'
   },
-  tab: {
+  title: { fontSize: 16, fontWeight: '500' },
+  desc: { color: '#555', marginVertical: 4 },
+  price: { fontWeight: '600' },
+  rating: { marginTop: 4 },
+  empty: { textAlign: 'center', marginTop: 20, color: '#888' },
+  tabBar: { backgroundColor: '#fff' },
+  indicator: { backgroundColor: '#000' },
+
+  // Modal styles
+  modalBackdrop: {
     flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderColor: '#0a84ff',
-  },
-  tabText: { fontSize: 16, color: '#777' },
-  activeTabText: { color: '#0a84ff', fontWeight: '600' },
-
-  emptyText: {
-    marginTop: 32,
-    textAlign: 'center',
-    color: '#777',
-    fontSize: 16,
-  },
-
-  itemRow: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  itemImg: {
-    width: imgSize,
-    height: imgSize,
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#fff',
     borderRadius: 8,
-    backgroundColor: '#f0f0f0',
+    padding: 16
   },
-  itemInfo: { marginLeft: 12, flex: 1 },
-  itemName: { fontSize: 16, fontWeight: '500' },
-  itemMeta: { marginTop: 4, color: '#777' },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8
+  },
+  modalDesc: {
+    marginBottom: 12,
+    color: '#555'
+  },
+  modalPrice: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 16
+  },
+  modalButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderRadius: 4
+  },
+  closeButton: {
+    alignSelf: 'center',
+    marginTop: 8
+  },
+  closeText: {
+    color: '#007aff'
+  }
 });
