@@ -3,22 +3,22 @@
 import React, { useState, useEffect } from 'react';
 
 export default function DownloadSection() {
-  const downloadLink = process.env.NEXT_PUBLIC_DOWNLOAD_LINK;
-  if (!downloadLink) {
-    console.error('NEXT_PUBLIC_DOWNLOAD_LINK is not defined');
-    return null;
-  }
-
+  // Hooks must be at the top level
   const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
-    const update = () => setDarkMode(
-      document.documentElement.classList.contains('dark')
-    );
+    const update = () =>
+      setDarkMode(document.documentElement.classList.contains('dark'));
     update();
     const obs = new MutationObserver(update);
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     return () => obs.disconnect();
   }, []);
+
+  const downloadLink = process.env.NEXT_PUBLIC_DOWNLOAD_LINK;
+  if (!downloadLink) {
+    console.error('NEXT_PUBLIC_DOWNLOAD_LINK is not defined');
+    return null;
+  }
 
   const sectionStyle: React.CSSProperties = {
     textAlign: 'center',
@@ -70,8 +70,28 @@ export default function DownloadSection() {
       </a>
 
       {/* Decorative SVG circles */}
-      <div style={{ position: 'absolute', top: -40, left: -40, width: 100, height: 100, background: 'rgba(255,255,255,0.2)', borderRadius: 9999 }} />
-      <div style={{ position: 'absolute', bottom: -50, right: -50, width: 150, height: 150, background: 'rgba(0,0,0,0.1)', borderRadius: 9999 }} />
+      <div
+        style={{
+          position: 'absolute',
+          top: -40,
+          left: -40,
+          width: 100,
+          height: 100,
+          background: 'rgba(255,255,255,0.2)',
+          borderRadius: 9999,
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: -50,
+          right: -50,
+          width: 150,
+          height: 150,
+          background: 'rgba(0,0,0,0.1)',
+          borderRadius: 9999,
+        }}
+      />
     </section>
   );
 }

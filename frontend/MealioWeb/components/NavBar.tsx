@@ -1,9 +1,11 @@
+// components/NavBar.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function NavBar() {
   const [darkMode, setDarkMode] = useState(false);
@@ -31,7 +33,6 @@ export default function NavBar() {
     { href: '#contact', label: 'Contact' },
   ];
 
-  // Styles
   const navStyle: React.CSSProperties = {
     position: 'fixed',
     top: 0,
@@ -102,16 +103,16 @@ export default function NavBar() {
             transition: 'font-size 0.3s',
           }}
         >
-          <img
+          <Image
             src="/logo.png"
             alt="Mealio logo"
+            width={scrolled ? 36 : 40}
+            height={scrolled ? 36 : 40}
             style={{
-              height: scrolled ? 36 : 40,
-              width: scrolled ? 36 : 40,
               borderRadius: '50%',
               objectFit: 'cover',
               marginRight: 14,
-              transition: 'height 0.3s, width 0.3s',
+              transition: 'width 0.3s, height 0.3s',
             }}
           />
           Mealio

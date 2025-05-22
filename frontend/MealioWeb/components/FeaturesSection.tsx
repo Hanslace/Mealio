@@ -1,6 +1,8 @@
+// components/FeaturesSection.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 const features = [
@@ -26,15 +28,18 @@ const features = [
   },
 ];
 
-
 export default function FeaturesSection() {
   const [darkMode, setDarkMode] = useState(false);
-  // detect dark mode via html class
+
   useEffect(() => {
-    const update = () => setDarkMode(document.documentElement.classList.contains('dark'));
+    const update = () =>
+      setDarkMode(document.documentElement.classList.contains('dark'));
     update();
     const obs = new MutationObserver(update);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
     return () => obs.disconnect();
   }, []);
 
@@ -73,13 +78,13 @@ export default function FeaturesSection() {
     transition: 'background 0.3s, box-shadow 0.3s, transform 0.2s',
   };
 
-  const imgStyle: React.CSSProperties = {
+  const imgWrapperStyle: React.CSSProperties = {
+    position: 'relative',
     width: 80,
     height: 80,
-    objectFit: 'fill',
+    margin: '0 auto 16px',
     borderRadius: 16,
-    marginBottom: 16,
-    filter: darkMode ? 'brightness(0.8)' : 'none',
+    overflow: 'hidden',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -96,7 +101,7 @@ export default function FeaturesSection() {
 
   return (
     <section id="features" style={sectionStyle}>
-      <h2 style={headingStyle}>Features & Benefits</h2>
+      <h2 style={headingStyle}>Features &amp; Benefits</h2>
       <div style={gridStyle}>
         {features.map((feat, idx) => (
           <motion.div
@@ -104,16 +109,19 @@ export default function FeaturesSection() {
             whileHover={{ scale: 1.05 }}
             transition={{ type: 'spring', stiffness: 300 }}
             style={cardStyle}
-            onHoverStart={e => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.transform = 'scale(1.05)';
-            }}
-            onHoverEnd={e => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.transform = 'scale(1)';
-            }}
           >
-            <img src={feat.img} alt={feat.title} style={imgStyle} />
+            <div style={imgWrapperStyle}>
+              <Image
+                src={feat.img}
+                alt={feat.title}
+                fill
+                style={{
+                  objectFit: 'cover',
+                  filter: darkMode ? 'brightness(0.8)' : 'none',
+                }}
+                priority={idx < 2} // preload first two for better LCP
+              />
+            </div>
             <h3 style={titleStyle}>{feat.title}</h3>
             <p style={descStyle}>{feat.description}</p>
           </motion.div>

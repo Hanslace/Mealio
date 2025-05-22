@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
+import Image from 'next/image';
 
 const testimonials = [
   {
@@ -25,12 +26,14 @@ const testimonials = [
 export default function TestimonialsSection() {
   const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
-    const update = () => setDarkMode(
-      document.documentElement.classList.contains('dark')
-    );
+    const update = () =>
+      setDarkMode(document.documentElement.classList.contains('dark'));
     update();
     const obs = new MutationObserver(update);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
     return () => obs.disconnect();
   }, []);
 
@@ -70,17 +73,15 @@ export default function TestimonialsSection() {
     flexDirection: 'column',
     alignItems: 'center',
     transition: 'transform 0.3s, box-shadow 0.3s',
-    // center third testimonial
-    gridColumn: 'span 1',
-    
   };
 
-  const avatarStyle: React.CSSProperties = {
+  const avatarWrapper: React.CSSProperties = {
+    position: 'relative',
     width: 64,
     height: 64,
     borderRadius: '50%',
     marginBottom: 16,
-    objectFit: 'cover',
+    overflow: 'hidden',
     border: darkMode ? '2px solid #FBBF24' : '2px solid #F59E0B',
   };
 
@@ -116,13 +117,25 @@ export default function TestimonialsSection() {
             key={idx}
             style={{
               ...cardStyle,
-              alignSelf: idx % 2 === 0 ? 'flex-start' : 'flex-end',
-              ...(idx === 2 && { alignSelf: 'center' }),
+              alignSelf:
+                idx === 2
+                  ? 'center'
+                  : idx % 2 === 0
+                  ? 'flex-start'
+                  : 'flex-end',
             }}
             whileHover={{ y: -10, scale: 1.02 }}
             transition={{ type: 'spring', stiffness: 250 }}
           >
-            <img src={t.img} alt={t.user} style={avatarStyle} />
+            <div style={avatarWrapper}>
+              <Image
+                src={t.img}
+                alt={t.user}
+                fill
+                style={{ objectFit: 'cover' }}
+                priority={idx < 2}
+              />
+            </div>
             <Star style={starStyle} />
             <p style={quoteStyle}>&ldquo;{t.text}&rdquo;</p>
             <div style={userStyle}>— {t.user}</div>

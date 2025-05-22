@@ -143,7 +143,7 @@ export default function AdminHome() {
         />
         <select
           value={audience}
-          onChange={(e: ChangeEvent<HTMLSelectElement>) => setAudience(e.target.value as any)}
+          onChange={(e: ChangeEvent<HTMLSelectElement>) => setAudience(e.target.value as 'customers' | 'restaurants' | 'delivery')}
           style={{
             width: '100%', padding: '12px', marginBottom: '12px', borderRadius: '8px', border: '1px solid #ccc'
           }}
