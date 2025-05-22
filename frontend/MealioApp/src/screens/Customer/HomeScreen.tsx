@@ -35,7 +35,6 @@ export default function HomeScreen({ navigation }: Props) {
   const [loadingPopular, setLoadingPopular] = useState(true);
   const [loadingRest, setLoadingRest] = useState(true);
 
-  // Configure header with cart icon and badge
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -56,7 +55,6 @@ export default function HomeScreen({ navigation }: Props) {
     });
   }, [navigation, cartItems.length]);
 
-  // Request location permission and get coords
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -87,72 +85,87 @@ export default function HomeScreen({ navigation }: Props) {
         placeholder="Search…"
         returnKeyType="search"
         onSubmitEditing={e =>
-          (navigation as HomeNav).navigate('Search', { query: e.nativeEvent.text })
+          // pass query directly to the Search tab
+          (navigation as HomeNav).navigate('Search', {
+            screen: 'SearchMain',
+            params: { query: e.nativeEvent.text.trim() },
+          })
         }
       />
 
       <View style={styles.section}>
         <Text style={styles.heading}>Coupons</Text>
-        {loadingCoupons ? (
-          <Text style={styles.loading}>Still fetching…</Text>
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {coupons.map(c => (
-              <View key={c.coupon_id} style={styles.couponCard}>
-                <Text>{c.code}</Text>
-                <Text>
-                  {c.discount_type === 'percentage'
-                    ? `${c.discount_value}% off`
-                    : `₹${c.discount_value} off`}
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
-        )}
+        {loadingCoupons
+          ? <Text style={styles.loading}>Still fetching…</Text>
+          : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {coupons.map(c => (
+                <View key={c.coupon_id} style={styles.couponCard}>
+                  <Text>{c.code}</Text>
+                  <Text>
+                    {c.discount_type === 'percentage'
+                      ? `${c.discount_value}% off`
+                      : `₹${c.discount_value} off`}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+          )
+        }
       </View>
 
       <View style={styles.section}>
         <Text style={styles.heading}>Popular Near You</Text>
-        {loadingPopular ? (
-          <Text style={styles.loading}>Still fetching…</Text>
-        ) : (
-          <FlatList
-            data={popular}
-            keyExtractor={i => String(i.item_id)}
-            horizontal
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.itemCard}
-                onPress={() => navigation.navigate('RestaurantDetails', { restaurantId: item.restaurant_id })}
-              >
-                <Text>{item.item_name}</Text>
-                <Text>₹{item.price}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        )}
+        {loadingPopular
+          ? <Text style={styles.loading}>Still fetching…</Text>
+          : (
+            <FlatList
+              data={popular}
+              keyExtractor={i => String(i.item_id)}
+              horizontal
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.itemCard}
+                  onPress={() =>
+                    navigation.navigate('RestaurantDetails', {
+                      restaurantId: item.restaurant_id
+                    })
+                  }
+                >
+                  <Text>{item.item_name}</Text>
+                  <Text>₹{item.price}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          )
+        }
       </View>
 
       <View style={styles.section}>
         <Text style={styles.heading}>Top Restaurants</Text>
-        {loadingRest ? (
-          <Text style={styles.loading}>Still fetching…</Text>
-        ) : (
-          <FlatList
-            data={restaurants}
-            keyExtractor={r => String(r.restaurant_id)}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.restCard}
-                onPress={() => navigation.navigate('RestaurantDetails', { restaurantId: item.restaurant_id })}
-              >
-                <Text style={styles.restName}>{item.restaurant_name}</Text>
-                <Text>{item.address.city}</Text>
-                <Text>{item.distance_km.toFixed(1)} km</Text>
-              </TouchableOpacity>
-            )}
-          />
-        )}
+        {loadingRest
+          ? <Text style={styles.loading}>Still fetching…</Text>
+          : (
+            <FlatList
+              data={restaurants}
+              keyExtractor={r => String(r.restaurant_id)}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.restCard}
+                  onPress={() =>
+                    navigation.navigate('RestaurantDetails', {
+                      restaurantId: item.restaurant_id
+                    })
+                  }
+                >
+                  <Text style={styles.restName}>{item.restaurant_name}</Text>
+                  <Text>{item.address.city}</Text>
+                  <Text>{item.distance_km.toFixed(1)} km</Text>
+                </TouchableOpacity>
+              )}
+            />
+          )
+        }
       </View>
     </View>
   );
@@ -161,45 +174,30 @@ export default function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   search: {
-    margin: 12,
-    padding: 8,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#ccc'
+    margin: 12, padding: 8,
+    borderRadius: 4, borderWidth: 1, borderColor: '#ccc'
   },
   section: { marginVertical: 8 },
   heading: { marginLeft: 12, fontSize: 18, fontWeight: '600' },
   loading: { marginLeft: 12, fontStyle: 'italic' },
   couponCard: {
-    backgroundColor: '#f9f9f9',
-    padding: 12,
-    marginHorizontal: 8,
-    borderRadius: 6
+    backgroundColor: '#f9f9f9', padding: 12,
+    marginHorizontal: 8, borderRadius: 6
   },
   itemCard: {
-    backgroundColor: '#fafafa',
-    padding: 16,
-    marginHorizontal: 8,
-    borderRadius: 6,
-    width: 140
+    backgroundColor: '#fafafa', padding: 16,
+    marginHorizontal: 8, borderRadius: 6, width: 140
   },
   restCard: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderColor: '#eee'
+    padding: 12, borderBottomWidth: 1, borderColor: '#eee'
   },
   restName: { fontSize: 16, fontWeight: '500' },
   cartButton: { marginRight: 16 },
   badge: {
-    position: 'absolute',
-    right: -6,
-    top: -4,
-    backgroundColor: 'red',
-    borderRadius: 8,
-    width: 16,
-    height: 16,
-    justifyContent: 'center',
-    alignItems: 'center'
+    position: 'absolute', right: -6, top: -4,
+    backgroundColor: 'red', borderRadius: 8,
+    width: 16, height: 16,
+    justifyContent: 'center', alignItems: 'center'
   },
   badgeText: { color: 'white', fontSize: 10 }
 });

@@ -9,9 +9,13 @@ import {
   ProfileStack,
 } from './CustomerStack';
 
+import type { CustomerStackParamList } from './CustomerStack';
+import { NavigatorScreenParams } from '@react-navigation/native';
+
+
 export type CustomerTabParamList = {
   Home: undefined;
-  Search: { query:string};
+  Search: NavigatorScreenParams<CustomerStackParamList>;
   Cart: undefined;
   Orders: undefined;
   Profile: undefined;

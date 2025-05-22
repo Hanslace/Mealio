@@ -1,9 +1,9 @@
 // app/admin/login/layout.tsx
+'use client';
+
 import React from 'react';
 
-export const metadata = {
-  title: 'Admin Sign In',
-};
+
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -14,7 +14,7 @@ export default function LoginLayout({ children }: { children: React.ReactNode })
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        background: '#f5f5f5',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       }}
     >
       {children}

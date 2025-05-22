@@ -27,24 +27,17 @@ export default function AdminLoginPage() {
 
     setLoading(true);
     try {
-      // 1) POST to our Next.js API route
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password }),
       });
 
-      // 2) Parse & type the JSON
       const data = (await res.json()) as LoginResponse;
-      if (!res.ok) {
-        // data.error (from our proxy) or data.message (from backend)
-        throw new Error(data.error ?? data.message ?? 'Login failed');
-      }
+      if (!res.ok) throw new Error(data.error ?? data.message ?? 'Login failed');
 
-      // 3) Success → redirect (cookie is already set by the API route)
       router.replace('/admin');
     } catch (err: unknown) {
-      // Narrow `unknown` to get a message
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
     } finally {
@@ -53,77 +46,79 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        width: 320,
-        padding: 24,
-        background: '#fff',
-        borderRadius: 8,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-      }}
-    >
-      <h2 style={{ marginBottom: 16, textAlign: 'center' }}>
-        Admin Sign In
-      </h2>
-
-      {error && (
-        <div
-          style={{
-            color: 'red',
-            marginBottom: 12,
-            textAlign: 'center',
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+      <form
+        onSubmit={handleSubmit}
         style={{
-          width: '100%',
-          padding: '8px',
-          marginBottom: '12px',
-          borderRadius: 4,
-          border: '1px solid #ccc',
-        }}
-      />
-
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        style={{
-          width: '100%',
-          padding: '8px',
-          marginBottom: '12px',
-          borderRadius: 4,
-          border: '1px solid #ccc',
-        }}
-      />
-
-      <button
-        type="submit"
-        disabled={loading}
-        style={{
-          width: '100%',
-          padding: '10px',
-          background: '#FFA500',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 4,
-          cursor: loading ? 'not-allowed' : 'pointer',
+          width:  '360px',
+          padding: '32px',
+          background: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: '12px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          fontFamily: 'Segoe UI, sans-serif'
         }}
       >
-        {loading ? 'Signing In…' : 'Sign In'}
-      </button>
-    </form>
+        <h2 style={{ fontSize: '22px', fontWeight: 600, marginBottom: '24px', textAlign: 'center', color: '#333' }}>
+          Admin Sign In
+        </h2>
+
+        {error && (
+          <div style={{ color: '#e53e3e', marginBottom: '16px', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
+
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            marginBottom: '16px',
+            borderRadius: '8px',
+            border: '1px solid #ccc',
+            fontSize: '14px'
+          }}
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            marginBottom: '24px',
+            borderRadius: '8px',
+            border: '1px solid #ccc',
+            fontSize: '14px'
+          }}
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            background: '#667eea',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: 500,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            boxShadow: '0 2px 10px rgba(102, 118, 234, 0.3)'
+          }}
+        >
+          {loading ? 'Signing In…' : 'Sign In'}
+        </button>
+      </form>
+    </div>
   );
 }
